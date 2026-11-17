@@ -1,0 +1,7 @@
+BETTER_AUTH_URL=http://localhost:3000 # Base URL of your app
+BETTER_AUTH_SECRET=qIxR7hRPrJAp1cEVHysiAMZEgGj1aEfd
+
+
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CLIENT_ID=
+            
