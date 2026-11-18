@@ -1,30 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { signIn, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const { data: session, isPending: sessionPending } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Already signed in? Leave the auth pages.
+  useEffect(() => {
+    if (!sessionPending && session?.user) router.replace("/");
+  }, [sessionPending, session, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    console.log("Sign in data:", { email, password });
-    setError("Submitted! (functionality to be integrated later)");
+    setIsSubmitting(true);
+    try {
+      const { error } = await signIn.email({ email, password });
+      if (error) {
+        setError(error.message ?? "Invalid email or password.");
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("Sign in failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    console.log("Google sign in clicked");
-    setError("Google sign in (functionality to be integrated later)");
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const { error } = await signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+      if (error) {
+        setError(error.message ?? "Google sign in failed.");
+        setIsSubmitting(false);
+      }
+      // On success the Better Auth client redirects to Google automatically.
+    } catch {
+      setError("Google sign in failed. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,7 +73,8 @@ export default function SignInPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all disabled:opacity-60"
           onClick={handleGoogleSignIn}
         >
           <Image
@@ -106,9 +144,17 @@ export default function SignInPage() {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-red-500 via-red-600 to-rose-600 text-white font-semibold shadow-lg shadow-red-500/30 hover:from-red-600 hover:via-red-700 hover:to-rose-700 hover:shadow-red-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-red-500 via-red-600 to-rose-600 text-white font-semibold shadow-lg shadow-red-500/30 hover:from-red-600 hover:via-red-700 hover:to-rose-700 hover:shadow-red-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            Sign In
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <Spinner />
+                Signing in…
+              </span>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
 

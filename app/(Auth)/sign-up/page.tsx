@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { signIn, signUp, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const { data: session, isPending: sessionPending } = useSession();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,9 +23,18 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Already signed in? Leave the auth pages.
+  useEffect(() => {
+    if (!sessionPending && session?.user) router.replace("/");
+  }, [sessionPending, session, router]);
 
   const passwordRules = {
-    minLength: password.length >= 6,
+    // Must match Better Auth's server default (`minPasswordLength: 8` in
+    // `lib/auth.ts` config); a shorter password passes the form but is
+    // rejected server-side.
+    minLength: password.length >= 8,
     hasUppercase: /[A-Z]/.test(password),
     hasLowercase: /[a-z]/.test(password),
   };
@@ -29,7 +43,7 @@ export default function SignUpPage() {
   const doPasswordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -43,18 +57,46 @@ export default function SignUpPage() {
       return;
     }
 
-    console.log("Sign up data:", {
-      fullName,
-      email,
-      password,
-      profileImageUrl,
-    });
-    setError("Submitted! (functionality to be integrated later)");
+    setIsSubmitting(true);
+    try {
+      const { error } = await signUp.email({
+        name: fullName,
+        email,
+        password,
+        image: profileImageUrl || undefined,
+      });
+      if (error) {
+        setError(error.message ?? "Could not create account.");
+        return;
+      }
+      // Better Auth signs the user in on successful sign-up.
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("Sign up failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleGoogleSignUp = () => {
-    console.log("Google sign up clicked");
-    setError("Google sign up (functionality to be integrated later)");
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const { error } = await signIn.social({
+        provider: "google",
+        callbackURL: "/",
+        requestSignUp: true,
+      });
+      if (error) {
+        setError(error.message ?? "Google sign up failed.");
+        setIsSubmitting(false);
+      }
+      // On success the Better Auth client redirects to Google automatically.
+    } catch {
+      setError("Google sign up failed. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,7 +116,8 @@ export default function SignUpPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all disabled:opacity-60"
           onClick={handleGoogleSignUp}
         >
           <svg
@@ -194,7 +237,7 @@ export default function SignUpPage() {
               <ul className="mt-2 space-y-1 text-xs">
                 <RequirementItem
                   met={passwordRules.minLength}
-                  label="At least 6 characters"
+                  label="At least 8 characters"
                 />
                 <RequirementItem
                   met={passwordRules.hasUppercase}
@@ -274,10 +317,17 @@ export default function SignUpPage() {
           {/* Gradient Sign Up Button */}
           <Button
             type="submit"
-            disabled={!isPasswordValid || !doPasswordsMatch}
+            disabled={!isPasswordValid || !doPasswordsMatch || isSubmitting}
             className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            Sign Up
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <Spinner />
+                Creating account…
+              </span>
+            ) : (
+              "Sign Up"
+            )}
           </Button>
         </form>
 
