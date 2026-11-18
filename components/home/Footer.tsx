@@ -1,0 +1,127 @@
+import { ArrowUpRight, Camera, MessageCircle, Pizza } from "lucide-react"
+import Link from "next/link"
+
+const browseLinks = [
+  { label: "Classic pizzas", href: "/?category=classic#featured" },
+  { label: "Vegetarian", href: "/?category=vegetarian#featured" },
+  { label: "Meat lovers", href: "/?category=meat-lovers#featured" },
+  { label: "Sides & more", href: "/?category=sides#featured" },
+]
+
+export default function Footer() {
+  return (
+    <footer id="footer" className="bg-[#211b18] text-white">
+      <div className="mx-auto max-w-[1320px] px-5 pt-16 pb-8 sm:px-8 lg:px-12 lg:pt-20">
+        <div className="grid gap-12 border-b border-white/10 pb-12 md:grid-cols-[1.4fr_0.8fr_0.8fr_1fr] lg:gap-16">
+          <div className="max-w-sm">
+            <Link href="/#home" className="inline-flex items-center gap-2.5">
+              <span className="flex size-10 items-center justify-center rounded-full bg-[#d62828] text-white">
+                <Pizza size={21} />
+              </span>
+              <span className="text-xl font-extrabold tracking-[-0.06em]">
+                Pizza<span className="text-[#f77f00]">Hub</span>
+              </span>
+            </Link>
+            <p className="mt-5 text-sm leading-7 text-white/60">
+              A little more joy in every slice. Discover neighborhood pizzerias,
+              made-fresh favorites, and the people behind them.
+            </p>
+            <div className="mt-6 flex items-center gap-2">
+              <span className="flex size-10 items-center justify-center rounded-full border border-white/15 text-white/75">
+                <Camera size={17} aria-hidden="true" />
+                <span className="sr-only">Social media</span>
+              </span>
+              <span className="flex size-10 items-center justify-center rounded-full border border-white/15 text-white/75">
+                <MessageCircle size={17} aria-hidden="true" />
+                <span className="sr-only">Community</span>
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-bold tracking-[0.18em] text-[#f77f00] uppercase">
+              Explore
+            </h2>
+            <ul className="mt-5 space-y-3.5 text-sm text-white/65">
+              <li>
+                <Link
+                  className="transition-colors hover:text-white"
+                  href="/#home"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="transition-colors hover:text-white"
+                  href="/#featured"
+                >
+                  Browse menu
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="transition-colors hover:text-white"
+                  href="/#how-it-works"
+                >
+                  How it works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="transition-colors hover:text-white"
+                  href="/#story"
+                >
+                  About us
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-bold tracking-[0.18em] text-[#f77f00] uppercase">
+              Browse by taste
+            </h2>
+            <ul className="mt-5 space-y-3.5 text-sm text-white/65">
+              {browseLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    className="transition-colors hover:text-white"
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-bold tracking-[0.18em] text-[#f77f00] uppercase">
+              For restaurants
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-white/60">
+              Put your craft in the spotlight and meet your next regular.
+            </p>
+            <Link
+              href="/vendor/subscription"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#f77f00]"
+            >
+              Become a partner <ArrowUpRight size={15} />
+            </Link>
+            <p className="mt-5 text-xs leading-6 text-white/40">
+              Have an order question? Sign in to manage your account.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} PizzaHub. Made for the love of pizza.
+          </p>
+          <p>Good food brings people together.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
