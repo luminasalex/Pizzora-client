@@ -109,13 +109,13 @@ export default function Navber() {
             {searchOpen ? <X size={19} /> : <Search size={19} />}
           </button>
           <Link
-            href="/sign-in"
+            href="/src/Sign-in"
             className="px-3 py-2 text-sm font-semibold text-[#403832] transition-colors hover:text-[#d62828]"
           >
             Sign in
           </Link>
           <Link
-            href="/sign-up"
+            href="/src/Sign-up"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-[#d62828] px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(214,40,40,0.18)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
           >
             Get started <ArrowUpRight size={16} />
