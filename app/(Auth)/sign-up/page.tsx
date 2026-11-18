@@ -2,23 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { signIn, signUp, useSession } from "@/lib/auth-client";
-import Link from "next/link";
 import { Eye, EyeOff, Check, X } from "lucide-react";
+
+type Role = "customer" | "vendor";
+
+// Inline placeholder (no external request, works offline)
+const AVATAR_PLACEHOLDER =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+      <rect width="96" height="96" fill="#e5e7eb"/>
+      <circle cx="48" cy="38" r="16" fill="#9ca3af"/>
+      <path d="M16 88c0-17.673 14.327-32 32-32s32 14.327 32 32z" fill="#9ca3af"/>
+    </svg>`
+  );
 
 export default function SignUpPage() {
   const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<Role>("customer");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -29,6 +45,11 @@ export default function SignUpPage() {
   useEffect(() => {
     if (!sessionPending && session?.user) router.replace("/");
   }, [sessionPending, session, router]);
+
+  // Retry loading the preview whenever the URL changes
+  useEffect(() => {
+    setImageFailed(false);
+  }, [profileImageUrl]);
 
   const passwordRules = {
     // Must match Better Auth's server default (`minPasswordLength: 8` in
@@ -42,6 +63,9 @@ export default function SignUpPage() {
   const isPasswordValid = Object.values(passwordRules).every(Boolean);
   const doPasswordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
+
+  const previewSrc =
+    profileImageUrl && !imageFailed ? profileImageUrl : AVATAR_PLACEHOLDER;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +88,7 @@ export default function SignUpPage() {
         email,
         password,
         image: profileImageUrl || undefined,
+        role,
       });
       if (error) {
         setError(error.message ?? "Could not create account.");
@@ -159,19 +184,16 @@ export default function SignUpPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Profile Image Preview */}
+          {/* Profile Image Preview (next/image) */}
           <div className="flex flex-col items-center gap-2">
-            <img
-              src={
-                profileImageUrl ||
-                "https://via.placeholder.com/96?text=Avatar"
-              }
+            <Image
+              src={previewSrc}
               alt="Profile preview"
+              width={96}
+              height={96}
+              unoptimized
               className="h-24 w-24 rounded-full object-cover border-2 border-muted"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src =
-                  "https://via.placeholder.com/96?text=Avatar";
-              }}
+              onError={() => setImageFailed(true)}
             />
           </div>
 
@@ -202,6 +224,23 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+          </div>
+
+          {/* Role */}
+          <div>
+            <Label htmlFor="role" className="block text-sm font-medium mb-1">
+              I want to join as
+            </Label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as Role)}
+              required
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <option value="customer">Customer</option>
+              <option value="vendor">Vendor</option>
+            </select>
           </div>
 
           {/* Password */}

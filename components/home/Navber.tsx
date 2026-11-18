@@ -1,9 +1,20 @@
 "use client"
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
-import { ArrowUpRight, Menu, Pizza, Search, X } from "lucide-react"
+import {
+  ArrowUpRight,
+  ChevronDown,
+  Menu,
+  Pizza,
+  Search,
+  ShoppingBag,
+  X,
+} from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { FormEvent, useEffect, useRef, useState } from "react"
+import { signOut, useSession } from "@/lib/auth-client"
 
 const navigation = [
   { label: "Home", href: "/#home" },
@@ -11,6 +22,13 @@ const navigation = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "Our story", href: "/#story" },
 ]
+
+type NavUser = {
+  name: string
+  email: string
+  image?: string | null
+  role?: string | null
+}
 
 function NavigationLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -29,12 +47,194 @@ function NavigationLinks({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-export default function Navber() {
+/* ---------- Avatar (next/image if the user has a photo, else initial) ---------- */
+function Avatar({
+  user,
+  size = 44,
+}: {
+  user: NavUser
+  size?: number
+}) {
+  const [failed, setFailed] = useState(false)
+  const initial = (user.name?.trim()?.[0] ?? user.email?.[0] ?? "U").toUpperCase()
+
+  useEffect(() => {
+    setFailed(false)
+  }, [user.image])
+
+  if (user.image && !failed) {
+    return (
+      <Image
+        src={user.image}
+        alt={user.name}
+        width={size}
+        height={size}
+        unoptimized
+        onError={() => setFailed(true)}
+        className="shrink-0 rounded-full object-cover"
+        style={{ width: size, height: size }}
+      />
+    )
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className="flex shrink-0 items-center justify-center rounded-full bg-[#f6d9cb] font-semibold text-[#b4372a]"
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {initial}
+    </span>
+  )
+}
+
+/* ---------- Cart button ---------- */
+function CartLink({ count }: { count: number }) {
+  return (
+    <Link
+      href="/cart"
+      aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`}
+      className="relative flex size-10 items-center justify-center rounded-full text-[#25201d] transition-colors hover:bg-[#f5ede3] hover:text-[#d62828]"
+    >
+      <ShoppingBag size={22} strokeWidth={1.8} />
+      {count > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[#d62828] text-[10px] font-bold text-white">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
+  )
+}
+
+/* ---------- Desktop user dropdown ---------- */
+function UserMenu({
+  user,
+  onSignOut,
+}: {
+  user: NavUser
+  onSignOut: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
+  const firstName = user.name?.split(" ")[0] ?? "Account"
+
+  // Close on outside click and on Escape
+  useEffect(() => {
+    if (!open) return
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false)
+    }
+
+    document.addEventListener("mousedown", onPointerDown)
+    document.addEventListener("keydown", onKeyDown)
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown)
+      document.removeEventListener("keydown", onKeyDown)
+    }
+  }, [open])
+
+  const itemClass =
+    "block rounded-lg px-2 py-2.5 text-[15px] text-[#403832] transition-colors hover:bg-[#f8f1e9] hover:text-[#d62828]"
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-3 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-[#f5ede3]"
+      >
+        <Avatar user={user} size={44} />
+        <span className="max-w-[110px] truncate text-sm font-bold text-[#25201d]">
+          {firstName}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`text-[#25201d] transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            key="user-menu"
+            initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: reduceMotion ? 0 : 0.16 }}
+            className="absolute right-0 top-full z-50 mt-3 w-72 rounded-2xl border border-[#eee2d5] bg-white p-5 shadow-[0_18px_50px_rgba(54,36,22,0.15)]"
+          >
+            <div className="mb-3 px-2">
+              <p className="truncate text-lg font-bold text-[#25201d]">
+                {user.name}
+              </p>
+              <p className="mt-1 truncate text-sm text-[#8a7f76]">
+                {user.email} · {user.role ?? "customer"}
+              </p>
+            </div>
+
+            <div className="flex flex-col">
+              <Link
+                href="/dashboard"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className={itemClass}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/profile"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className={itemClass}
+              >
+                Profile settings
+              </Link>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false)
+                  onSignOut()
+                }}
+                className={`${itemClass} w-full text-left`}
+              >
+                Sign out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
+  const router = useRouter()
+  const { data: session, isPending: sessionPending } = useSession()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const searchInput = useRef<HTMLInputElement>(null)
   const reduceMotion = useReducedMotion()
+
+  const user: NavUser | null = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        role: (session.user as { role?: string | null }).role ?? "customer",
+      }
+    : null
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 12)
@@ -63,6 +263,18 @@ export default function Navber() {
       ? `/?q=${encodeURIComponent(query)}#featured`
       : "/#featured"
     setSearchOpen(false)
+  }
+
+  async function handleSignOut() {
+    setMobileOpen(false)
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/")
+          router.refresh()
+        },
+      },
+    })
   }
 
   return (
@@ -98,6 +310,7 @@ export default function Navber() {
           <NavigationLinks />
         </nav>
 
+        {/* Desktop right side */}
         <div className="hidden items-center gap-3 lg:flex">
           <button
             type="button"
@@ -108,20 +321,36 @@ export default function Navber() {
           >
             {searchOpen ? <X size={19} /> : <Search size={19} />}
           </button>
-          <Link
-            href="/src/Sign-in"
-            className="px-3 py-2 text-sm font-semibold text-[#403832] transition-colors hover:text-[#d62828]"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/src/Sign-up"
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#d62828] px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(214,40,40,0.18)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
-          >
-            Get started <ArrowUpRight size={16} />
-          </Link>
+
+          {sessionPending ? (
+            <div
+              aria-hidden="true"
+              className="h-11 w-40 animate-pulse rounded-full bg-[#f1e7db]"
+            />
+          ) : user ? (
+            <>
+              <CartLink count={cartCount} />
+              <UserMenu user={user} onSignOut={handleSignOut} />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="px-3 py-2 text-sm font-semibold text-[#403832] transition-colors hover:text-[#d62828]"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/sign-up"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#d62828] px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(214,40,40,0.18)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
+              >
+                Get started <ArrowUpRight size={16} />
+              </Link>
+            </>
+          )}
         </div>
 
+        {/* Mobile right side */}
         <div className="flex items-center gap-1 lg:hidden">
           <button
             type="button"
@@ -132,6 +361,7 @@ export default function Navber() {
           >
             {searchOpen ? <X size={19} /> : <Search size={19} />}
           </button>
+          {user && <CartLink count={cartCount} />}
           <button
             type="button"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
@@ -204,22 +434,60 @@ export default function Navber() {
                   </Link>
                 ))}
               </nav>
-              <div className="grid gap-3 pt-8">
-                <Link
-                  href="/sign-in"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/sign-up"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#d62828] font-semibold text-white"
-                >
-                  Get started <ArrowUpRight size={17} />
-                </Link>
-              </div>
+
+              {user ? (
+                <div className="grid gap-3 pt-8">
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#eee2d5] bg-white p-4">
+                    <Avatar user={user} size={48} />
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-[#25201d]">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-sm text-[#8a7f76]">
+                        {user.email} · {user.role ?? "customer"}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
+                  >
+                    Profile settings
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="flex h-12 items-center justify-center rounded-full bg-[#d62828] font-semibold text-white"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-3 pt-8">
+                  <Link
+                    href="/sign-in"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#d62828] font-semibold text-white"
+                  >
+                    Get started <ArrowUpRight size={17} />
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
