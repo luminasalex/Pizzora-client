@@ -128,7 +128,7 @@ export default function VendorSubscription() {
                 </div>
 
                 <div
-                  className={`p-6 rounded-xl border ${planDetails.free.isPremium ? "border-green-500 bg-green-50" : "border-[--chartjs-color-1]"} ${planDetails.free.isPremium ? "bg-green-50" : ""}`)
+                  className={`p-6 rounded-xl border ${planDetails.free.isPremium ? "border-green-500 bg-green-50" : "border-[--chartjs-color-1]"} ${planDetails.free.isPremium ? "bg-green-50" : ""}`}
                 >
                   <h3 className="text-lg font-medium mb-2">Premium Plan</h3>
                   <p className="text-muted-foreground">
