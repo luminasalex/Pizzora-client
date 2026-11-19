@@ -2,10 +2,10 @@ import { ArrowUpRight, Camera, MessageCircle, Pizza } from "lucide-react"
 import Link from "next/link"
 
 const browseLinks = [
-  { label: "Classic pizzas", href: "/?category=classic#featured" },
-  { label: "Vegetarian", href: "/?category=vegetarian#featured" },
-  { label: "Meat lovers", href: "/?category=meat-lovers#featured" },
-  { label: "Sides & more", href: "/?category=sides#featured" },
+  { label: "Classic pizzas", href: "/menu?category=Classic%20Pizzas" },
+  { label: "Vegetarian", href: "/menu?category=Vegetarian%20Pizzas" },
+  { label: "Meat lovers", href: "/menu?category=Meat%20Lovers" },
+  { label: "Sides & more", href: "/menu?category=Sides%20%26%20Appetizers" },
 ]
 
 export default function Footer() {
@@ -19,7 +19,7 @@ export default function Footer() {
                 <Pizza size={21} />
               </span>
               <span className="text-xl font-extrabold tracking-[-0.06em]">
-                Pizza<span className="text-[#f77f00]">Hub</span>
+                Pizzora
               </span>
             </Link>
             <p className="mt-5 text-sm leading-7 text-white/60">
@@ -54,7 +54,7 @@ export default function Footer() {
               <li>
                 <Link
                   className="transition-colors hover:text-white"
-                  href="/#featured"
+                  href="/menu"
                 >
                   Browse menu
                 </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
               Put your craft in the spotlight and meet your next regular.
             </p>
             <Link
-              href="/vendor/subscription"
+              href="/sign-up"
               className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#f77f00]"
             >
               Become a partner <ArrowUpRight size={15} />
@@ -117,7 +117,7 @@ export default function Footer() {
 
         <div className="flex flex-col gap-3 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} PizzaHub. Made for the love of pizza.
+            © {new Date().getFullYear()} Pizzora. Made for the love of pizza.
           </p>
           <p>Good food brings people together.</p>
         </div>

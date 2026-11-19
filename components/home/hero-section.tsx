@@ -46,13 +46,13 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
             <Link
-              href="/#featured"
+              href="/menu"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-full bg-[#d62828] px-7 text-sm font-bold text-white shadow-[0_12px_24px_rgba(214,40,40,0.19)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
             >
               Explore menu <ArrowRight size={17} />
             </Link>
             <Link
-              href="/#categories"
+              href="/#restaurant-partners"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-full border border-[#decdb9] bg-white/70 px-7 text-sm font-bold text-[#3a302a] transition-all hover:border-[#d62828] hover:text-[#d62828]"
             >
               Discover restaurants <ArrowUpRight size={16} />

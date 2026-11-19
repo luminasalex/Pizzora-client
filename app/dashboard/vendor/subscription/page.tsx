@@ -12,6 +12,7 @@ import type { ApiEnvelope } from "@/lib/menu-types"
 type Subscription = {
   plan: "free" | "premium"
   expiresAt: string | null
+  cancelAtPeriodEnd: boolean
 }
 
 const freeFeatures = [
@@ -32,6 +33,7 @@ export default function VendorSubscription() {
     { enabled: isVendor },
   )
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const plan = data?.data.plan ?? "free"
 
@@ -56,6 +58,21 @@ export default function VendorSubscription() {
         cause instanceof Error ? cause.message : "Could not start Premium checkout.",
       )
       setIsCheckingOut(false)
+    }
+  }
+
+  async function cancelRenewal() {
+    setIsCancelling(true)
+    setActionError(null)
+    try {
+      await apiFetch("/api/subscriptions/cancel", { method: "POST" })
+      refetch()
+    } catch (cause) {
+      setActionError(
+        cause instanceof Error ? cause.message : "Could not cancel this subscription.",
+      )
+    } finally {
+      setIsCancelling(false)
     }
   }
 
@@ -135,11 +152,25 @@ export default function VendorSubscription() {
                 ))}
               </ul>
               {plan === "premium" ? (
-                <p className="mt-5 text-sm text-muted-foreground">
-                  {data?.data.expiresAt
-                    ? `Renews or expires ${new Date(data.data.expiresAt).toLocaleDateString()}.`
-                    : "Your Premium plan is active."}
-                </p>
+                <div className="mt-5 grid gap-3">
+                  <p className="text-sm text-muted-foreground">
+                    {data?.data.cancelAtPeriodEnd
+                      ? `Premium access ends ${data.data.expiresAt ? new Date(data.data.expiresAt).toLocaleDateString() : "at the end of the billing period"}.`
+                      : data?.data.expiresAt
+                        ? `Renews or expires ${new Date(data.data.expiresAt).toLocaleDateString()}.`
+                        : "Your Premium plan is active."}
+                  </p>
+                  {!data?.data.cancelAtPeriodEnd && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={cancelRenewal}
+                      disabled={isCancelling}
+                    >
+                      {isCancelling ? "Cancelling renewal…" : "Cancel renewal"}
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <Button
                   className="mt-6 w-full bg-[#d62828] hover:bg-[#a4161a]"

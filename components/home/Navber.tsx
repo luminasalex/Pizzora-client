@@ -7,7 +7,6 @@ import {
   Menu,
   Pizza,
   Search,
-  ShoppingBag,
   X,
 } from "lucide-react"
 import Image from "next/image"
@@ -81,24 +80,6 @@ function Avatar({
     >
       {initial}
     </span>
-  )
-}
-
-/* ---------- Cart button ---------- */
-function CartLink({ count }: { count: number }) {
-  return (
-    <Link
-      href="/cart"
-      aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`}
-      className="relative flex size-10 items-center justify-center rounded-full text-[#25201d] transition-colors hover:bg-[#f5ede3] hover:text-[#d62828]"
-    >
-      <ShoppingBag size={22} strokeWidth={1.8} />
-      {count > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[#d62828] text-[10px] font-bold text-white">
-          {count > 9 ? "9+" : count}
-        </span>
-      )}
-    </Link>
   )
 }
 
@@ -239,7 +220,7 @@ function UserMenu({
   )
 }
 
-export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
+export default function Navber() {
   const router = useRouter()
   const { data: session, isPending: sessionPending } = useSession()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -348,10 +329,7 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
               className="h-11 w-40 animate-pulse rounded-full bg-[#f1e7db]"
             />
           ) : user ? (
-            <>
-              <CartLink count={cartCount} />
-              <UserMenu user={user} onSignOut={handleSignOut} />
-            </>
+            <UserMenu user={user} onSignOut={handleSignOut} />
           ) : (
             <>
               <Link
@@ -381,7 +359,6 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
           >
             {searchOpen ? <X size={19} /> : <Search size={19} />}
           </button>
-          {user && <CartLink count={cartCount} />}
           <button
             type="button"
             aria-label={mobileOpen ? "Close navigation" : "Open navigation"}

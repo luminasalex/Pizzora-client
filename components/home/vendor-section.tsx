@@ -30,7 +30,7 @@ export default function VendorSection() {
               </h2>
               <p className="mt-5 max-w-lg text-sm leading-7 text-white/65 sm:text-base">
                 Grow your restaurant&apos;s visibility, showcase your menu, and
-                reach more hungry customers with PizzaHub Premium.
+                reach more hungry customers with Pizzora Premium.
               </p>
               <ul className="mt-6 grid gap-3 text-sm text-white/80 sm:grid-cols-2">
                 {perks.map((perk) => (
@@ -43,7 +43,7 @@ export default function VendorSection() {
                 ))}
               </ul>
               <Link
-                href="/vendor/subscription"
+                href="/sign-up"
                 className="mt-8 inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-[#f77f00] px-6 text-sm font-bold text-[#261811] transition-all hover:-translate-y-0.5 hover:bg-[#ff9d2f]"
               >
                 Become a premium partner <ArrowUpRight size={17} />

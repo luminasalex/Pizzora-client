@@ -15,7 +15,7 @@ type ProfileUser = {
   email: string
   image?: string | null
   role?: string
-  businessName?: string
+  businessName?: string | null
 }
 
 function ProfileEditor({ user }: { user: ProfileUser }) {

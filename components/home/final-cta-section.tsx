@@ -29,7 +29,7 @@ export default function FinalCtaSection() {
                 Your next favorite pizza is just a few clicks away.
               </p>
               <Link
-                href="/#featured"
+                href="/menu"
                 className="mt-7 inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-white px-6 text-sm font-bold text-[#25201d] transition-all hover:-translate-y-0.5 hover:bg-[#fff1dc]"
               >
                 Explore the menu <ArrowRight size={17} />

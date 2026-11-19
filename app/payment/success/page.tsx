@@ -10,6 +10,7 @@ import { useSession } from "@/lib/auth-client"
 type Subscription = {
   plan: "free" | "premium"
   expiresAt: string | null
+  cancelAtPeriodEnd: boolean
 }
 
 export default function PaymentSuccessPage() {

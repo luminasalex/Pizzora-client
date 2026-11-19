@@ -70,7 +70,7 @@ export default function BenefitsSection() {
         <div>
           <Reveal>
             <p className="mb-4 text-[11px] font-bold tracking-[0.2em] text-[#d62828] uppercase">
-              The PizzaHub difference
+              The Pizzora difference
             </p>
             <h2 className="font-display max-w-xl text-4xl leading-[1.05] font-medium tracking-[-0.045em] text-[#25201d] sm:text-5xl lg:text-[58px]">
               More than pizza.
@@ -115,7 +115,7 @@ export default function BenefitsSection() {
             href="#how-it-works"
             className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#d62828] transition-all hover:gap-3"
           >
-            How PizzaHub works <ArrowUpRight size={16} />
+            How Pizzora works <ArrowUpRight size={16} />
           </a>
         </div>
       </div>
