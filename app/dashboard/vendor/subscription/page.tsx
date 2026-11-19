@@ -120,7 +120,6 @@ export default function VendorSubscription() {
                     {planDetails.free.maxItems === -1 ? "Unlimited items" : `Up to ${planDetails.free.maxItems} active items`}
                   </p>
                   <Button
-                    width="100%"
                     className="mt-4 w-full rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/90"
                   >
                     Upgrade to Premium
@@ -138,7 +137,6 @@ export default function VendorSubscription() {
                     {planDetails.premium.maxItems === -1 ? "Unlimited items" : `Up to ${planDetails.premium.maxItems} active items`}
                   </p>
                   <Button
-                    width="100%"
                     className="mt-4 w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     disabled>
                     Subscribed
