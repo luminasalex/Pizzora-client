@@ -9,6 +9,7 @@ export const authClient = createAuthClient({
       {
         user: {
           role: { type: "string" }
+          businessName: { type: "string"; required: false }
         }
       }
     >(),

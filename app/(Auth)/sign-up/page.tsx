@@ -31,6 +31,7 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("customer");
+  const [businessName, setBusinessName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
@@ -84,6 +85,7 @@ export default function SignUpPage() {
         password,
         image: profileImageUrl || undefined,
         role,
+        businessName: role === "vendor" ? businessName : undefined,
       });
       if (error) {
         setError(error.message ?? "Could not create account.");
@@ -237,6 +239,23 @@ export default function SignUpPage() {
               <option value="vendor">Vendor</option>
             </select>
           </div>
+
+          {role === "vendor" && (
+            <div>
+              <Label htmlFor="businessName" className="block text-sm font-medium mb-1">
+                Restaurant name
+              </Label>
+              <Input
+                id="businessName"
+                placeholder="Your restaurant"
+                value={businessName}
+                onChange={(event) => setBusinessName(event.target.value)}
+                minLength={2}
+                maxLength={120}
+                required
+              />
+            </div>
+          )}
 
           {/* Password */}
           <div>

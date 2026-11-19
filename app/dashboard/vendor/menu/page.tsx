@@ -12,6 +12,7 @@ import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import type { ApiEnvelope, MenuItemRecord } from "@/lib/menu-types"
+import { uploadImage } from "@/lib/uploads"
 
 const categories = [
   "Classic Pizzas",
@@ -28,7 +29,6 @@ const emptyForm = {
   description: "",
   price: "",
   location: "",
-  image: "",
 }
 
 export default function VendorMenuManagement() {
@@ -39,6 +39,7 @@ export default function VendorMenuManagement() {
     { enabled: isVendor },
   )
   const [form, setForm] = useState(emptyForm)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [busyItem, setBusyItem] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -48,6 +49,8 @@ export default function VendorMenuManagement() {
     setIsSaving(true)
     setMessage(null)
     try {
+      if (!imageFile) throw new Error("Choose a menu item image.")
+      const imageUrl = await uploadImage(imageFile)
       await apiFetch("/api/menu-items", {
         method: "POST",
         body: JSON.stringify({
@@ -56,10 +59,11 @@ export default function VendorMenuManagement() {
           description: form.description,
           price: Number(form.price),
           location: form.location,
-          images: [form.image],
+          images: [imageUrl],
         }),
       })
       setForm(emptyForm)
+      setImageFile(null)
       setMessage("Menu item submitted for admin approval.")
       refetch()
     } catch (cause) {
@@ -191,13 +195,12 @@ export default function VendorMenuManagement() {
                 />
               </div>
               <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="image">Image URL (HTTPS)</Label>
+                <Label htmlFor="image">Menu item image</Label>
                 <Input
                   id="image"
-                  type="url"
-                  value={form.image}
-                  onChange={(event) => setForm({ ...form, image: event.target.value })}
-                  placeholder="https://..."
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
                   required
                 />
               </div>
