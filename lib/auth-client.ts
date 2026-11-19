@@ -1,16 +1,19 @@
 import { createAuthClient } from "better-auth/react"
 import { inferAdditionalFields } from "better-auth/client/plugins"
-import type { auth } from "./auth"
 
-// Single client instance shared by every auth UI. The auth API is served by
-// `app/api/auth/[...all]/route.ts` on this same origin, so no baseURL is
-// needed. Do NOT pass `process.env.BETTER_AUTH_URL` here — that key is
-// server-only and is undefined in the browser bundle.
-//
-// `inferAdditionalFields` makes TypeScript aware of the custom `role` field
-// declared in `lib/auth.ts` (type-only import, no server code is bundled).
 export const authClient = createAuthClient({
-  plugins: [inferAdditionalFields<typeof auth>()],
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001",
+  plugins: [
+    inferAdditionalFields<
+      undefined,
+      {
+        user: {
+          role: { type: "string" }
+          isBlocked: { type: "boolean" }
+        }
+      }
+    >(),
+  ],
 })
 
 export const { signIn, signUp, signOut, useSession } = authClient
