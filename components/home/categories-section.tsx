@@ -8,15 +8,32 @@ import {
   Sparkles,
   Utensils,
 } from "lucide-react"
+import type { StaticImageData } from "next/image"
+import type { LucideIcon } from "lucide-react"
 import { Reveal } from "./reveal"
+import classicImage from "@/app/image/category-classic.png"
+import pizzaImage from "@/app/image/pizza-01.png"
+import heroImage from "@/app/image/hero-pizza.png"
+import benefitsImage from "@/app/image/Why-Choose.png"
 
 // Default categories data - used when API doesn't provide data
-const defaultCategories = [
+type CategoryCard = {
+  slug: string
+  name: string
+  note: string
+  image: StaticImageData
+  icon: LucideIcon
+  tone: string
+  size: string
+  imagePosition: string
+}
+
+const defaultCategories: CategoryCard[] = [
   {
     slug: "classic",
     name: "Classic pizzas",
     note: "The timeless favorites",
-    image: "/app/image/category-classic.png",
+    image: classicImage,
     icon: Pizza,
     tone: "bg-[#f3e7d7]",
     size: "md:col-span-2",
@@ -26,7 +43,7 @@ const defaultCategories = [
     slug: "vegetarian",
     name: "Vegetarian",
     note: "Garden-fresh goodness",
-    image: "/app/image/pizza-01.png",
+    image: pizzaImage,
     icon: Leaf,
     tone: "bg-[#e8eee1]",
     size: "",
@@ -36,7 +53,7 @@ const defaultCategories = [
     slug: "meat-lovers",
     name: "Meat lovers",
     note: "Big, bold, and satisfying",
-    image: "/app/image/hero-pizza.png",
+    image: heroImage,
     icon: Utensils,
     tone: "bg-[#f0e2d9]",
     size: "",
@@ -46,7 +63,7 @@ const defaultCategories = [
     slug: "specialty",
     name: "Specialty & gourmet",
     note: "A little outside the box",
-    image: "/app/image/pizza-01.png",
+    image: pizzaImage,
     icon: Sparkles,
     tone: "bg-[#f0e9da]",
     size: "md:col-span-2",
@@ -56,7 +73,7 @@ const defaultCategories = [
     slug: "sides",
     name: "Sides & appetizers",
     note: "The perfect plus-one",
-    image: "/app/image/Why-Choose.png",
+    image: benefitsImage,
     icon: Utensils,
     tone: "bg-[#efe2d1]",
     size: "",
@@ -66,18 +83,13 @@ const defaultCategories = [
     slug: "drinks",
     name: "Drinks & desserts",
     note: "Save room for something sweet",
-    image: "/app/image/category-classic.png",
+    image: classicImage,
     icon: CakeSlice,
     tone: "bg-[#f5e8dc]",
     size: "",
     imagePosition: "object-[center_40%]",
   },
 ]
-
-type CategoriesSectionProps = {
-  categories?: any[]
-  selectedCategory?: string
-}
 
 const categoryLabels: Record<string, string> = {
   classic: "Classic Pizzas",
@@ -88,12 +100,7 @@ const categoryLabels: Record<string, string> = {
   drinks: "Drinks & Desserts",
 }
 
-export default function CategoriesSection({
-  categories: apiCategories,
-  selectedCategory,
-}: CategoriesSectionProps) {
-  const categories = apiCategories || defaultCategories
-
+export default function CategoriesSection() {
   return (
     <section
       id="categories"
@@ -116,7 +123,7 @@ export default function CategoriesSection({
         </Reveal>
 
         <div className="grid auto-rows-[230px] gap-4 sm:grid-cols-2 md:auto-rows-[250px] md:grid-cols-4 lg:auto-rows-[270px]">
-          {categories.map((category, index) => {
+          {defaultCategories.map((category, index) => {
             const Icon = category.icon
 
             return (
