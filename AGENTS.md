@@ -1,88 +1,79 @@
-# Pizzora client — Next.js App Router
+# Pizzora — Full-Stack Pizza Ordering Platform
 
-Single Next.js 16 app (React 19, TypeScript strict, Tailwind CSS v4). Not a monorepo — this directory is the repo root.
+## Overview
+Full-stack pizza ordering & delivery platform with Customer/Vendor/Admin roles. Next.js 16 App Router frontend (React 19, TypeScript strict, Tailwind CSS v4) + Express.js + MongoDB backend. Auth via Better Auth (email/password + Google OAuth) with MongoDB adapter.
 
-## Frameworks & libraries
+## Frameworks & Libraries
+- **Frontend**: Next.js 16 (App Router, RSC), React 19, TypeScript 5 (strict), Tailwind CSS v4
+- **UI**: shadcn/ui (base-nova style) built on Base UI, lucide-react, framer-motion, embla-carousel-react, recharts, next-themes, date-fns
+- **Backend**: Express.js 5, MongoDB driver, `@better-auth/mongo-adapter`
+- **Auth**: better-auth with `@better-auth/mongo-adapter`, email/password + Google social login
+- **Motion/Widgets**: framer-motion, embla-carousel-react, react-resizable-panels, recharts, date-fns
 
-- **Core**: Next.js 16 (App Router, RSC), React 19, TypeScript 5 (strict).
-- **Auth**: Better Auth (`better-auth`, `@better-auth/mongo-adapter`, `mongodb`) with email/password + Google social login.
-- **UI**: shadcn/ui (style `base-nova`) built on Base UI (`@base-ui/react`), Tailwind CSS v4, `class-variance-authority`, `cn`, lucide-react icons, `tw-animate-css`.
-- **Motion / widgets**: framer-motion, embla-carousel-react, react-resizable-panels, cmdk, react-day-picker, input-otp, recharts (charts), shiki (code highlighting), next-themes (dark mode), date-fns.
-- **Tooling**: ESLint 9 (`eslint-config-next`), Prettier 3 + `prettier-plugin-tailwindcss`, PostCSS (`@tailwindcss/postcss`).
-
-## Developer commands
-
-Run from `client/`:
-
+## Developer Commands (run from `client/`)
 | Purpose | Command |
 | --- | --- |
 | Dev server | `npm run dev` |
 | Production build | `npm run build` |
-| Serve production build | `npm run start` |
+| Serve production | `npm run start` |
 | Type-check | `npm run typecheck` (`tsc --noEmit`) |
 | Lint | `npm run lint` |
-| Format | `npm run format` (Prettier, `**/*.{ts,tsx}`) |
+| Format | `npm run format` (Prettier + `prettier-plugin-tailwindcss`) |
 
-Verify with `npm run typecheck` then `npm run lint` before finishing.
-
-- **No test script or test framework exists.** Do not invent a test command; if adding tests, wire a real npm script first.
-- `npm run lint` currently **exits 1 on pre-existing errors**: `react-hooks/set-state-in-effect` in `hooks/use-mobile.ts` and `components/ui/carousel.tsx` (plus one warning in `components/ui/carousel.tsx`). These are baseline failures — don't try to "fix" them unless asked, and don't attribute them to your change.
+**Always verify with `npm run typecheck` then `npm run lint`** before finishing. Lint has pre-existing baseline errors — do not attribute new changes to them.
 
 ## Environment
+Create a local `.env` (gitignored). Required keys:
+- `BETTER_AUTH_URL` — e.g. `http://localhost:3000`
+- `BETTER_AUTH_SECRET` — random secret string
+- `BETTER_AUTH_DB_URI` — MongoDB connection URI; auth requires a running MongoDB reachable here
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+- `MONGODB_URI` — also used by API routes (defaults to `mongodb://localhost:27017`)
 
-- Create a local `.env` (gitignored, no `.env.example` committed). Required keys: `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_DB_URI`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
-- Auth requires a running MongoDB reachable at `BETTER_AUTH_DB_URI`; server config is `lib/auth.ts` (email/password + Google via MongoDB adapter).
-- Browser auth client: `lib/auth-client.ts` (exports `signIn`, `signUp`, `useSession` from `createAuthClient`). Route handler: `app/api/auth/[...all]/route.ts`.
+## Key Files
+- `client/app/layout.tsx` — root layout with Navber, Footer, Geist fonts
+- `client/app/page.tsx` — home page, fetches `category`/`q` searchParams, calls `/api/menus` and `/api/categories`
+- `client/app/api/menus/route.ts` — GET/POST menu items with category/$regex search
+- `client/app/api/categories/route.ts` — GET/POST categories with parent filtering
+- `client/app/api/orders/route.ts` — GET/POST orders with userId filtering, sorted by date
+- `client/app/api/restaurants/route.ts` — GET/POST restaurants
+- `client/app/api/auth/[...all]/route.ts` — Better Auth Next-js handler (`toNextJsHandler(auth)`)
+- `client/lib/auth.ts` — Better Auth config with roles (customer/vendor/admin); role assignment logic for admin emails
+- `client/lib/auth-client.ts` — Browser auth client: `signIn`, `signUp`, `signOut`, `useSession`
+- `server/index.js` — Express API + MongoDB connection, exports `db`; collections: `categories`, `menus`, `orders`, `restaurants`
+- `client/hooks/use-api.ts` — Custom hook for fetching data from API routes (`/api/...`)
+- `components/ui/` — shadcn/ui primitives (base-nova style)
+- `components/home/` — Home page sections (Hero, Menu, Categories, Benefits, How it works, Vendor, Final CTA)
+
+## Known Quirks
+- `next dev` rewrites the managed block `<!-- BEGIN:nextjs-agent-rules -->` — commit AGENTS.md with your work; deleting causes uncommitted diff
+- Prettier enforces **no semicolons, double quotes, 2-space indent**, with `prettier-plugin-tailwindcss`
+- `next.config.ts` allows **all** remote image hostnames — new `<Image>` hosts need no config changes
+- Lint has **pre-existing errors** (baseline failures: `react-hooks/set-state-in-effect` in `hooks/use-mobile.ts` and `components/ui/carousel.tsx`) — do not attribute new changes to them
+- `CLAUDE.md` is a pointer (`@AGENTS.md`); keep AGENTS.md as the single source of truth
 
 ## Structure
+- `@/*` alias maps to repo root (`tsconfig.json` `paths`) — e.g. `@/components/ui/button`
+- Auth pages live in `app/(Auth)/sign-in|sign-up/page.tsx` and are `"use client"`; toggle via `/sign-in` and `/sign-up` links
+- `(Auth)` group does not appear in the URL
+- App-level sections in `components/home/`, reusable hooks in `hooks/`, UI primitives in `components/ui/`
+- Server Components default; `"use client"` files have event handlers
 
-- `@/*` alias maps to the repo root (`tsconfig.json` `paths`) — e.g. `@/components/ui/button`.
-- `app/page.tsx` is the home page (Server Component, awaits `searchParams` for `category`/`q`); `app/layout.tsx` is the root layout wrapping all pages with `Navber`, `Footer`, and Geist fonts.
-- Auth pages live in `app/(Auth)/sign-in|sign-up/page.tsx` and are `"use client"` (they have event handlers); they toggle via `/sign-in` and `/sign-up` links. The `(Auth)` group does not appear in the URL.
-- shadcn/ui primitives are in `components/ui/` (style `base-nova`, per `components.json`); extend an existing primitive before adding a copy. App-level sections are in `components/home/`, reusable hooks in `hooks/`.
-- `cn` class utility: `@/lib/utils`.
+## API Integration
+- Frontend fetches from `/api/menus`, `/api/categories`, `/api/orders`, `/api/restaurants`, `/api/auth/[...all]`
+- Server (`server/index.js`) connects to MongoDB collection names: `categories`, `menus`, `orders`, `restaurants`
+- API routes use `NextResponse` and read `MONGODB_URI` from env
+- Categories and menus flow from API → `app/page.tsx` → `HomePage` → UI components
+- `use-api.ts` hook pattern: `useApi('/api/menus', { method: 'GET' })` returns `{ data, error, isLoading }`
+- HomePage accepts `selectedCategory`, `searchQuery`, `featuredItems`, and `categories` props
+- CategoriesSection accepts `categories` prop (with default fallback data if API returns empty)
+- FeaturedMenuSection accepts `items` prop (menu items from API), `selectedCategory`, and `searchQuery`
 
-## Known quirks
-
-- **`next dev` rewrites a managed block in this file** (`<!-- BEGIN:nextjs-agent-rules -->`, generated by `node_modules/next/dist/server/lib/generate-agent-files.js`). Commit `AGENTS.md` with your work; deleting the block just causes an uncommitted diff. The block points at `node_modules/next/dist/docs/` — Next.js 16 differs from older training data, so consult those guides before writing Next-specific code.
-- Prettier (`.prettierrc`) enforces **no semicolons, double quotes, 2-space indent**, with `prettier-plugin-tailwindcss` (stylesheet `app/globals.css`, sorts classes in `cn`/`cva`). Run `npm run format` after large edits.
-- `next.config.ts` allows **all** http(s) remote image hostnames — new `<Image>` hosts need no config changes.
-- `CLAUDE.md` is a pointer (`@AGENTS.md`); keep this file as the single source of truth.
-
----
-
-## Summary
-
-This is the Pizzora client application — a Next.js 16 App Router project (React 19, TypeScript strict, Tailwind CSS v4). It forms the frontend portion of the Pizzora full-stack pizza ordering and delivery platform, working in conjunction with the Express.js backend repository.
-
-### Core Features
-- **App Router architecture** with Server Components and RSC
-- **Better Auth** for authentication (email/password + Google OAuth) with MongoDB adapter
-- **shadcn/ui** components (base-nova style) built on Base UI
-- **Tailwind CSS v4** with base-nova color configuration
-- **Role-based navigation** (Customer / Vendor / Admin)
-- **Responsive design** — mobile-first layout
-- **Framer Motion** for animations, **embla-carousel-react** for carousels
-- **Next-themes** for dark mode support
-- **Environment configuration** with required keys: BETTER_AUTH_URL, BETTER_AUTH_SECRET, BETTER_AUTH_DB_URI, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-
-### Development
-- Run `npm run dev` for the development server
-- `npm run build` for production build, `npm run start` to serve
-- `npm run typecheck` for TypeScript verification, `npm run lint` for linting
-- `npm run format` for Prettier formatting
-
-### Key Files
-- `app/layout.tsx` — root layout with Navber, Footer, and Geist fonts
-- `app/page.tsx` — home page with searchParams for category/q
-- `app/(Auth)/sign-in|sign-up/page.tsx` — authentication pages
-- `lib/auth-client.ts` — browser auth client with signIn, signUp, useSession
-- `app/api/auth/[...all]/route.ts` — auth route handler
-- `components/ui/` — shadcn/ui primitives
-- `hooks/` — reusable custom hooks
-
-### Known Quirks
-- `next dev` rewrites the managed block `<!-- BEGIN:nextjs-agent-rules -->` — commit AGENTS.md with your work
-- Prettier enforces no semicolons, double quotes, 2-space indent
-- `next.config.ts` allows all remote image hostnames for `<Image>`
-- Lint has pre-existing errors (baseline failures) — don't attribute new changes to them
+## Authentication Flow
+- Better Auth configured with email/password + Google provider
+- Roles: "customer" (default), "vendor", "admin" (assigned only to verified emails in ADMIN_EMAILS list)
+- Admin emails configured via `ADMIN_EMAILS` env var (comma-separated)
+- Auth routes: `/sign-in`, `/sign-up` (toggle links); `(Auth)` group invisible in URL
+- Session managed via `useSession` in navbar; `signOut` with success redirect to `/`
+- Client-side auth client: `client/lib/auth-client.ts` (no server env vars bundled)
+- Server-side auth config: `client/lib/auth.ts` (MongoDB adapter, baseURL from env)
