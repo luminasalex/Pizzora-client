@@ -9,20 +9,30 @@ import VendorSection from "./vendor-section"
 type HomePageProps = {
   selectedCategory?: string
   searchQuery?: string
+  featuredItems?: any[]
+  categories?: any[]
 }
 
 export default function HomePage({
   selectedCategory,
   searchQuery,
+  featuredItems,
+  categories,
 }: HomePageProps) {
   return (
     <main>
       <HeroSection />
       <FeaturedMenuSection
+        items={featuredItems}
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
       />
-      <CategoriesSection />
+      {categories && categories.length > 0 && (
+        <CategoriesSection
+          categories={categories}
+          selectedCategory={selectedCategory}
+        />
+      )}
       <BenefitsSection />
       <HowItWorksSection />
       <VendorSection />

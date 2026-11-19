@@ -8,6 +8,7 @@ import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useSession } from "@/lib/auth-client"
+import { useApi } from "@/hooks/use-api"
 
 export default function VendorOrders() {
   const { data: session, isPending: sessionPending } = useSession()
@@ -19,58 +20,13 @@ export default function VendorOrders() {
     return <div className="p-8">Access denied: Vendor orders only.</div>
   }
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {}
-    const visibilityChange = "onvisibilitychange" in document ? "visibilitychange" : "onpagehide" in document ? "pagehide" : ""
-    if (visibilityChange) {
-      document.addEventListener(visibilityChange, handleVisibilityChange)
-    }
-    return () => {
-      document.removeEventListener(visibilityChange, handleVisibilityChange)
-    }
-  }, [])
+  // Fetch orders from API
+  const { data: apiOrders, isLoading, error } = useApi('/api/orders?userId=' + (user?.id || ''), {
+    method: 'GET',
+    enabled: !!user,
+  })
 
-  // Sample orders data
-  const [orders, setOrders] = React.useState([])
-
-  // Mock order data
-  React.useEffect(() => {
-    setOrders([
-      {
-        id: 1,
-        customerName: "Sarah Johnson",
-        itemName: "Margherita Pizza",
-        itemImage: "/placeholder-food.svg",
-        deliveryDate: "2026-11-30",
-        deliveryAddress: "123 Food Street, Dhaka",
-        customerMessage: "No olives please!",
-        status: "pending" as "pending" | "accepted" | "rejected" | "cancelled",
-        createdAt: "2026-11-20",
-      },
-      {
-        id: 2,
-        customerName: "Michael Chen",
-        itemName: "Pepperoni Pizza",
-        itemImage: "/placeholder-food.svg",
-        deliveryDate: "2026-12-01",
-        deliveryAddress: "456 Avenue, Dhaka",
-        customerMessage: "Extra cheese thanks!",
-        status: "accepted" as "pending" | "accepted" | "rejected" | "cancelled",
-        createdAt: "2026-11-19",
-      },
-      {
-        id: 3,
-        customerName: "Emily Davis",
-        itemName: "Vegetarian Delight",
-        itemImage: "/placeholder-food.svg",
-        deliveryDate: "2026-12-02",
-        deliveryAddress: "789 Green Ave, Dhaka",
-        customerMessage: "Please cook well done",
-        status: "rejected" as "pending" | "accepted" | "rejected" | "cancelled",
-        createdAt: "2026-11-18",
-      },
-    ])
-  }, [])
+  const orders = apiOrders ?? []
 
   const statusBadges: Record<string, { bg: string; color: string }> = {
     pending: { bg: "#f0e7dc", color: "[--chartjs-color-1]" },
@@ -122,8 +78,8 @@ export default function VendorOrders() {
                 </TableHeader>
                 <TableBody>
                   {orders
-                    .filter((order) => order.status === "pending")
-                    .map((order) => (
+                    .filter((order: any) => order.status === "pending")
+                    .map((order: any) => (
                       <TableRow key={order.id}>
                         <TableCell className="p-4">
                           <div className="flex items-start">
@@ -190,12 +146,12 @@ export default function VendorOrders() {
             <section>
               <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Accepted Orders</h2>
               <p className="text-muted-foreground text-sm">
-                {orders.filter((o) => o.status === "accepted").length} orders currently being prepared
+                {orders.filter((o: any) => o.status === "accepted").length} orders currently being prepared
               </p>
 
               <h2 className="text-xl font-semibold text-[--chartjs-color-1] mt-6 mb-4">Rejected Orders</h2>
               <p className="text-muted-foreground text-sm">
-                {orders.filter((o) => o.status === "rejected").length} orders rejected
+                {orders.filter((o: any) => o.status === "rejected").length} orders rejected
               </p>
             </section>
           </div>

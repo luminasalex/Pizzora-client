@@ -78,9 +78,9 @@ export default function FeaturedMenuSection({
               </p>
               <h3 className="font-display relative mt-3 text-3xl leading-tight font-medium tracking-tight text-[#25201d] sm:text-4xl">
                 {error
-                  ? "We couldn’t load the menu just yet."
+                  ? "We couldn't load the menu just yet."
                   : searchQuery
-                    ? `We’re still finding “${searchQuery}”.`
+                    ? `We're still finding "&ldquo;${searchQuery}&rdquo;."`
                     : categoryLabel
                       ? `${categoryLabel} are coming soon.`
                       : "A fresh menu is on its way."}
@@ -88,7 +88,7 @@ export default function FeaturedMenuSection({
               <p className="relative mx-auto mt-3 max-w-lg text-sm leading-6 text-[#82776f]">
                 {error
                   ? error
-                  : "We’re bringing neighborhood menus together. Browse our food categories while we prepare the next batch."}
+                  : "We're bringing neighborhood menus together. Browse our food categories while we prepare the next batch."}
               </p>
               <Link
                 href="/#categories"

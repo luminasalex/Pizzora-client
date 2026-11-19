@@ -46,11 +46,6 @@ export default function SignUpPage() {
     if (!sessionPending && session?.user) router.replace("/");
   }, [sessionPending, session, router]);
 
-  // Retry loading the preview whenever the URL changes
-  useEffect(() => {
-    setImageFailed(false);
-  }, [profileImageUrl]);
-
   const passwordRules = {
     // Must match Better Auth's server default (`minPasswordLength: 8` in
     // `lib/auth.ts` config); a shorter password passes the form but is
@@ -349,7 +344,10 @@ export default function SignUpPage() {
               type="url"
               placeholder="https://example.com/avatar.png"
               value={profileImageUrl}
-              onChange={(e) => setProfileImageUrl(e.target.value)}
+              onChange={(e) => {
+                setProfileImageUrl(e.target.value);
+                setImageFailed(false);
+              }}
             />
           </div>
 

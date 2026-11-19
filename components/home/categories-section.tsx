@@ -8,18 +8,15 @@ import {
   Sparkles,
   Utensils,
 } from "lucide-react"
-import classicPizza from "@/app/image/category-classic.png"
-import meatPizza from "@/app/image/hero-pizza.png"
-import veggiePizza from "@/app/image/pizza-01.png"
-import sidesImage from "@/app/image/Why-Choose.png"
 import { Reveal } from "./reveal"
 
-const categories = [
+// Default categories data - used when API doesn't provide data
+const defaultCategories = [
   {
     slug: "classic",
     name: "Classic pizzas",
     note: "The timeless favorites",
-    image: classicPizza,
+    image: "/app/image/category-classic.png",
     icon: Pizza,
     tone: "bg-[#f3e7d7]",
     size: "md:col-span-2",
@@ -29,7 +26,7 @@ const categories = [
     slug: "vegetarian",
     name: "Vegetarian",
     note: "Garden-fresh goodness",
-    image: veggiePizza,
+    image: "/app/image/pizza-01.png",
     icon: Leaf,
     tone: "bg-[#e8eee1]",
     size: "",
@@ -39,7 +36,7 @@ const categories = [
     slug: "meat-lovers",
     name: "Meat lovers",
     note: "Big, bold, and satisfying",
-    image: meatPizza,
+    image: "/app/image/hero-pizza.png",
     icon: Utensils,
     tone: "bg-[#f0e2d9]",
     size: "",
@@ -49,7 +46,7 @@ const categories = [
     slug: "specialty",
     name: "Specialty & gourmet",
     note: "A little outside the box",
-    image: veggiePizza,
+    image: "/app/image/pizza-01.png",
     icon: Sparkles,
     tone: "bg-[#f0e9da]",
     size: "md:col-span-2",
@@ -59,7 +56,7 @@ const categories = [
     slug: "sides",
     name: "Sides & appetizers",
     note: "The perfect plus-one",
-    image: sidesImage,
+    image: "/app/image/Why-Choose.png",
     icon: Utensils,
     tone: "bg-[#efe2d1]",
     size: "",
@@ -69,7 +66,7 @@ const categories = [
     slug: "drinks",
     name: "Drinks & desserts",
     note: "Save room for something sweet",
-    image: classicPizza,
+    image: "/app/image/category-classic.png",
     icon: CakeSlice,
     tone: "bg-[#f5e8dc]",
     size: "",
@@ -77,7 +74,26 @@ const categories = [
   },
 ]
 
-export default function CategoriesSection() {
+type CategoriesSectionProps = {
+  categories?: any[]
+  selectedCategory?: string
+}
+
+const categoryLabels: Record<string, string> = {
+  classic: "Classic Pizzas",
+  vegetarian: "Vegetarian Pizzas",
+  "meat-lovers": "Meat Lovers",
+  specialty: "Specialty & Gourmet",
+  sides: "Sides & Appetizers",
+  drinks: "Drinks & Desserts",
+}
+
+export default function CategoriesSection({
+  categories: apiCategories,
+  selectedCategory,
+}: CategoriesSectionProps) {
+  const categories = apiCategories || defaultCategories
+
   return (
     <section
       id="categories"
