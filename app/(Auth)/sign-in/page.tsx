@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { signIn, useSession } from "@/lib/auth-client";
+import { clearCachedApiToken } from "@/lib/api";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -36,6 +37,7 @@ export default function SignInPage() {
         setError(error.message ?? "Invalid email or password.");
         return;
       }
+      clearCachedApiToken();
       router.push("/");
       router.refresh();
     } catch {

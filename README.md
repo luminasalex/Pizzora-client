@@ -27,7 +27,7 @@ npm run build
 
 ## Authentication and API
 
-Better Auth is served by the Express API; the client uses its email/password, Google OAuth, and session endpoints. The API URL must be included in the server's `CLIENT_URL` allowlist. Browser API requests send credentials so the Better Auth session cookie is included.
+Better Auth is served by the Express API; the client uses its email/password, Google OAuth, and session endpoints. The API URL must be included in the server's `CLIENT_URL` allowlist. Protected API calls obtain a short-lived JWT from Better Auth and send it as a Bearer token; session cookies are used only to obtain and refresh that token.
 
 The client uses the API for menu search, category/location filtering, price sorting, pagination, order requests, role dashboards, vendor menu management, account profiles, and Stripe subscription checkout. The client never sets privileged roles, approval state, or subscription status.
 

@@ -14,6 +14,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { FormEvent, useEffect, useRef, useState } from "react"
 import { signOut, useSession } from "@/lib/auth-client"
+import { clearCachedApiToken } from "@/lib/api"
 
 const navigation = [
   { label: "Home", href: "/#home" },
@@ -271,6 +272,7 @@ export default function Navber() {
     await signOut({
       fetchOptions: {
         onSuccess: () => {
+          clearCachedApiToken()
           router.push("/")
           router.refresh()
         },

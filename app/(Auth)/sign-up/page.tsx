@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { signIn, signUp, useSession } from "@/lib/auth-client";
+import { clearCachedApiToken } from "@/lib/api";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 type Role = "customer" | "vendor";
@@ -91,6 +92,7 @@ export default function SignUpPage() {
         setError(error.message ?? "Could not create account.");
         return;
       }
+      clearCachedApiToken();
       // Better Auth signs the user in on successful sign-up.
       router.push("/");
       router.refresh();
