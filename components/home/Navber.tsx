@@ -118,6 +118,7 @@ function UserMenu({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const reduceMotion = useReducedMotion()
   const firstName = user.name?.split(" ")[0] ?? "Account"
+  const role = user.role ?? "customer"
 
   // Close on outside click and on Escape
   useEffect(() => {
@@ -259,6 +260,7 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
         role: (session.user as { role?: string | null }).role ?? "customer",
       }
     : null
+  const role = user?.role ?? "customer"
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 12)

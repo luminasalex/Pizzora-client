@@ -9,7 +9,6 @@ export const authClient = createAuthClient({
       {
         user: {
           role: { type: "string" }
-          isBlocked: { type: "boolean" }
         }
       }
     >(),
