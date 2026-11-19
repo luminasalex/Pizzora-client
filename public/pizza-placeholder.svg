@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="650" viewBox="0 0 800 650">
+  <rect width="800" height="650" fill="#f7ead8"/>
+  <circle cx="400" cy="325" r="220" fill="#d9362b"/>
+  <circle cx="400" cy="325" r="198" fill="#f3c35f"/>
+  <circle cx="400" cy="325" r="175" fill="#fff1cd"/>
+  <path d="M225 267c116-85 235-103 350-70M232 370c120-48 233-46 336 3M310 468c54-21 118-24 179-8" fill="none" stroke="#df5b38" stroke-width="14" stroke-linecap="round"/>
+  <g fill="#c74431">
+    <circle cx="345" cy="250" r="20"/><circle cx="465" cy="282" r="19"/>
+    <circle cx="300" cy="355" r="19"/><circle cx="425" cy="370" r="21"/>
+    <circle cx="520" cy="400" r="18"/><circle cx="370" cy="445" r="17"/>
+  </g>
+  <text x="400" y="600" fill="#795d43" font-family="Arial,sans-serif" font-size="24" text-anchor="middle">Freshly baked with Pizzora</text>
+</svg>

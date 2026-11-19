@@ -126,7 +126,9 @@ export default function CategoriesSection({
                 className={category.size}
               >
                 <Link
-                  href={`/?category=${category.slug}#featured`}
+                  href={`/menu?category=${encodeURIComponent(
+                    categoryLabels[category.slug] ?? category.name,
+                  )}`}
                   aria-label={`Browse ${category.name}`}
                   className={`group relative flex h-full min-h-[220px] overflow-hidden rounded-[24px] ${category.tone}`}
                 >

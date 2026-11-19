@@ -18,7 +18,7 @@ import { signOut, useSession } from "@/lib/auth-client"
 
 const navigation = [
   { label: "Home", href: "/#home" },
-  { label: "Browse menu", href: "/#featured" },
+  { label: "Browse menu", href: "/menu" },
   { label: "How it works", href: "/#how-it-works" },
   { label: "Our story", href: "/#story" },
 ]
@@ -285,9 +285,7 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const query = String(formData.get("q") ?? "").trim()
-    window.location.href = query
-      ? `/?q=${encodeURIComponent(query)}#featured`
-      : "/#featured"
+    window.location.href = query ? `/menu?q=${encodeURIComponent(query)}` : "/menu"
     setSearchOpen(false)
   }
 
@@ -314,7 +312,7 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
       <div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
         <Link
           href="/#home"
-          aria-label="PizzaHub home"
+          aria-label="Pizzora home"
           className="flex shrink-0 items-center gap-2.5"
           onClick={() => setMobileOpen(false)}
         >
@@ -322,7 +320,7 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
             <Pizza size={22} strokeWidth={2.2} />
           </span>
           <span className="text-[21px] font-extrabold tracking-[-0.06em] text-[#25201d]">
-            Pizza<span className="text-[#d62828]">Hub</span>
+            <span>Pizzora</span>
             <span className="ml-1 align-top text-[9px] font-bold tracking-[0.2em] text-[#f77f00]">
               ®
             </span>
@@ -475,24 +473,16 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
                     </div>
                   </div>
                   <Link
-                  href="/dashboard/vendor"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
-                >
-                  {role === "vendor" || role === "admin" ? "Dashboard" : ""}
-                </Link>
-                <Link
-                  href="/dashboard/customer"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
-                  style={{ display: role === "customer" ? "block" : "none" }}>
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/dashboard/admin"
+                    href={
+                      role === "admin"
+                        ? "/dashboard/admin"
+                        : role === "vendor"
+                          ? "/dashboard/vendor"
+                          : "/dashboard/customer"
+                    }
                     onClick={() => setMobileOpen(false)}
                     className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
-                    style={{ display: role === "admin" ? "block" : "none" }}>
+                  >
                     Dashboard
                   </Link>
                   <Link

@@ -24,6 +24,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
           fill
           sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
+          unoptimized
         />
         {item.premium && (
           <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-[#25201d]/90 px-3 py-1.5 text-[10px] font-bold tracking-[0.12em] text-[#ffe0ac] uppercase backdrop-blur-sm">

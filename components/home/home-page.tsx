@@ -5,19 +5,20 @@ import FinalCtaSection from "./final-cta-section"
 import HeroSection from "./hero-section"
 import HowItWorksSection from "./how-it-works-section"
 import VendorSection from "./vendor-section"
+import type { MenuItem } from "./menu-item-card"
 
 type HomePageProps = {
   selectedCategory?: string
   searchQuery?: string
-  featuredItems?: any[]
-  categories?: any[]
+  featuredItems?: MenuItem[]
+  error?: string
 }
 
 export default function HomePage({
   selectedCategory,
   searchQuery,
   featuredItems,
-  categories,
+  error,
 }: HomePageProps) {
   return (
     <main>
@@ -26,13 +27,9 @@ export default function HomePage({
         items={featuredItems}
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
+        error={error}
       />
-      {categories && categories.length > 0 && (
-        <CategoriesSection
-          categories={categories}
-          selectedCategory={selectedCategory}
-        />
-      )}
+      <CategoriesSection selectedCategory={selectedCategory} />
       <BenefitsSection />
       <HowItWorksSection />
       <VendorSection />

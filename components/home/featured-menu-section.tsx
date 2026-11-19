@@ -48,7 +48,7 @@ export default function FeaturedMenuSection({
             </p>
           </div>
           <Link
-            href="/#categories"
+            href="/menu"
             className="inline-flex items-center gap-2 text-sm font-bold text-[#d62828] transition-all hover:gap-3"
           >
             Explore all categories <ArrowRight size={16} />
@@ -91,7 +91,7 @@ export default function FeaturedMenuSection({
                   : "We're bringing neighborhood menus together. Browse our food categories while we prepare the next batch."}
               </p>
               <Link
-                href="/#categories"
+                href="/menu"
                 className="relative mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#25201d] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#d62828]"
               >
                 Find your perfect slice <ArrowRight size={15} />
