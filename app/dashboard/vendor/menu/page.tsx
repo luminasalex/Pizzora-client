@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import Image from "next/image"
+import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -40,6 +41,7 @@ export default function VendorMenuManagement() {
   )
   const [form, setForm] = useState(emptyForm)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [busyItem, setBusyItem] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -49,28 +51,54 @@ export default function VendorMenuManagement() {
     setIsSaving(true)
     setMessage(null)
     try {
-      if (!imageFile) throw new Error("Choose a menu item image.")
-      const imageUrl = await uploadImage(imageFile)
-      await apiFetch("/api/menu-items", {
-        method: "POST",
-        body: JSON.stringify({
-          itemName: form.itemName,
-          category: form.category,
-          description: form.description,
-          price: Number(form.price),
-          location: form.location,
-          images: [imageUrl],
-        }),
-      })
+      if (!editingItemId && !imageFile) throw new Error("Choose a menu item image.")
+      const imageUrl = imageFile ? await uploadImage(imageFile) : undefined
+      await apiFetch(
+        editingItemId ? `/api/menu-items/${editingItemId}` : "/api/menu-items",
+        {
+          method: editingItemId ? "PATCH" : "POST",
+          body: JSON.stringify({
+            itemName: form.itemName,
+            category: form.category,
+            description: form.description,
+            price: Number(form.price),
+            location: form.location,
+            ...(imageUrl ? { images: [imageUrl] } : {}),
+          }),
+        },
+      )
       setForm(emptyForm)
       setImageFile(null)
-      setMessage("Menu item submitted for admin approval.")
+      setEditingItemId(null)
+      setMessage(
+        editingItemId
+          ? "Menu item updated. Admin approval may be required again."
+          : "Menu item submitted for admin approval.",
+      )
       refetch()
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : "Could not save this item.")
     } finally {
       setIsSaving(false)
     }
+  }
+
+  function editItem(item: MenuItemRecord) {
+    setEditingItemId(item.id)
+    setForm({
+      itemName: item.itemName,
+      category: item.category,
+      description: item.description,
+      price: String(item.price),
+      location: item.location,
+    })
+    setImageFile(null)
+  }
+
+  function resetForm() {
+    setForm(emptyForm)
+    setImageFile(null)
+    setEditingItemId(null)
   }
 
   async function updateAvailability(item: MenuItemRecord) {
@@ -132,7 +160,7 @@ export default function VendorMenuManagement() {
 
         <Card className="mb-8 border-[#eee5db]">
           <CardHeader>
-            <CardTitle>Add a menu item</CardTitle>
+            <CardTitle>{editingItemId ? "Edit menu item" : "Add a menu item"}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={addItem} className="grid gap-5 md:grid-cols-2">
@@ -198,15 +226,28 @@ export default function VendorMenuManagement() {
                 <Label htmlFor="image">Menu item image</Label>
                 <Input
                   id="image"
+                  key={editingItemId ?? "new-item"}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-                  required
+                  required={!editingItemId}
                 />
+                {editingItemId && (
+                  <p className="text-xs text-muted-foreground">
+                    Choose a new image only if you want to replace the current one.
+                  </p>
+                )}
               </div>
-              <Button type="submit" className="bg-[#d62828] hover:bg-[#a4161a]" disabled={isSaving}>
-                {isSaving ? "Submitting…" : "Submit for approval"}
-              </Button>
+              <div className="flex flex-wrap gap-3">
+                <Button type="submit" className="bg-[#d62828] hover:bg-[#a4161a]" disabled={isSaving}>
+                  {isSaving ? "Saving…" : editingItemId ? "Save changes" : "Submit for approval"}
+                </Button>
+                {editingItemId && (
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancel edit
+                  </Button>
+                )}
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -249,6 +290,14 @@ export default function VendorMenuManagement() {
                     <TableCell>{item.availability ? "Available" : "Paused"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => editItem(item)}
+                        >
+                          <Pencil className="mr-1 size-3.5" />
+                          Edit
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
