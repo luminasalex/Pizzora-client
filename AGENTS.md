@@ -48,3 +48,41 @@ Verify with `npm run typecheck` then `npm run lint` before finishing.
 - Prettier (`.prettierrc`) enforces **no semicolons, double quotes, 2-space indent**, with `prettier-plugin-tailwindcss` (stylesheet `app/globals.css`, sorts classes in `cn`/`cva`). Run `npm run format` after large edits.
 - `next.config.ts` allows **all** http(s) remote image hostnames — new `<Image>` hosts need no config changes.
 - `CLAUDE.md` is a pointer (`@AGENTS.md`); keep this file as the single source of truth.
+
+---
+
+## Summary
+
+This is the Pizzora client application — a Next.js 16 App Router project (React 19, TypeScript strict, Tailwind CSS v4). It forms the frontend portion of the Pizzora full-stack pizza ordering and delivery platform, working in conjunction with the Express.js backend repository.
+
+### Core Features
+- **App Router architecture** with Server Components and RSC
+- **Better Auth** for authentication (email/password + Google OAuth) with MongoDB adapter
+- **shadcn/ui** components (base-nova style) built on Base UI
+- **Tailwind CSS v4** with base-nova color configuration
+- **Role-based navigation** (Customer / Vendor / Admin)
+- **Responsive design** — mobile-first layout
+- **Framer Motion** for animations, **embla-carousel-react** for carousels
+- **Next-themes** for dark mode support
+- **Environment configuration** with required keys: BETTER_AUTH_URL, BETTER_AUTH_SECRET, BETTER_AUTH_DB_URI, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+
+### Development
+- Run `npm run dev` for the development server
+- `npm run build` for production build, `npm run start` to serve
+- `npm run typecheck` for TypeScript verification, `npm run lint` for linting
+- `npm run format` for Prettier formatting
+
+### Key Files
+- `app/layout.tsx` — root layout with Navber, Footer, and Geist fonts
+- `app/page.tsx` — home page with searchParams for category/q
+- `app/(Auth)/sign-in|sign-up/page.tsx` — authentication pages
+- `lib/auth-client.ts` — browser auth client with signIn, signUp, useSession
+- `app/api/auth/[...all]/route.ts` — auth route handler
+- `components/ui/` — shadcn/ui primitives
+- `hooks/` — reusable custom hooks
+
+### Known Quirks
+- `next dev` rewrites the managed block `<!-- BEGIN:nextjs-agent-rules -->` — commit AGENTS.md with your work
+- Prettier enforces no semicolons, double quotes, 2-space indent
+- `next.config.ts` allows all remote image hostnames for `<Image>`
+- Lint has pre-existing errors (baseline failures) — don't attribute new changes to them

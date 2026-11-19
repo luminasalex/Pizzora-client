@@ -183,34 +183,58 @@ function UserMenu({
             </div>
 
             <div className="flex flex-col">
-              <Link
-                href="/dashboard"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className={itemClass}
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/profile"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className={itemClass}
-              >
-                Profile settings
-              </Link>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false)
-                  onSignOut()
-                }}
-                className={`${itemClass} w-full text-left`}
-              >
-                Sign out
-              </button>
-            </div>
+                {role === "vendor"
+                  ? (
+                    <Link
+                      href="/dashboard/vendor"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className={itemClass}
+                    >
+                      Dashboard
+                    </Link>
+                  )
+                  : role === "admin"
+                  ? (
+                    <Link
+                      href="/dashboard/admin"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className={itemClass}
+                    >
+                      Dashboard
+                    </Link>
+                  )
+                  : (
+                    <Link
+                      href="/dashboard/customer"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className={itemClass}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                <Link
+                  href="/profile"
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className={itemClass}
+                >
+                  Profile settings
+                </Link>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false)
+                    onSignOut()
+                  }}
+                  className={`${itemClass} w-full text-left`}
+                >
+                  Sign out
+                </button>
+              </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -449,10 +473,24 @@ export default function Navber({ cartCount = 0 }: { cartCount?: number }) {
                     </div>
                   </div>
                   <Link
-                    href="/dashboard"
+                  href="/dashboard/vendor"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
+                >
+                  {role === "vendor" || role === "admin" ? "Dashboard" : ""}
+                </Link>
+                <Link
+                  href="/dashboard/customer"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
+                  style={{ display: role === "customer" ? "block" : "none" }}>
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/dashboard/admin"
                     onClick={() => setMobileOpen(false)}
                     className="flex h-12 items-center justify-center rounded-full border border-[#e7d9ca] font-semibold text-[#403832]"
-                  >
+                    style={{ display: role === "admin" ? "block" : "none" }}>
                     Dashboard
                   </Link>
                   <Link
