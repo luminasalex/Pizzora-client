@@ -43,7 +43,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
             </h3>
           </div>
           <p className="shrink-0 pt-1 text-base font-bold text-[#25201d]">
-            ${item.price.toFixed(2)}
+            ৳{item.price.toFixed(2)}
           </p>
         </div>
         <div className="mt-4 flex items-center justify-between border-t border-[#f0e9e1] pt-4">
