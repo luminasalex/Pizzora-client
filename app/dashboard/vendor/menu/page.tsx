@@ -1,312 +1,283 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
-import { useEffect } from "react"
-import { AlertCircle, CheckCircle, Clock, Shield, User, Building, Award, TrendingUp, Layout, LogIn, LogOut } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table"
+import { useState, type FormEvent } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import { useApi } from "@/hooks/use-api"
+import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import type { ApiEnvelope, MenuItemRecord } from "@/lib/menu-types"
+
+const categories = [
+  "Classic Pizzas",
+  "Vegetarian Pizzas",
+  "Meat Lovers",
+  "Specialty / Gourmet Pizzas",
+  "Sides & Appetizers",
+  "Beverages & Desserts",
+]
+
+const emptyForm = {
+  itemName: "",
+  category: categories[0],
+  description: "",
+  price: "",
+  location: "",
+  image: "",
+}
 
 export default function VendorMenuManagement() {
   const { data: session, isPending: sessionPending } = useSession()
+  const isVendor = session?.user?.role === "vendor"
+  const { data, error, isLoading, refetch } = useApi<ApiEnvelope<MenuItemRecord[]>>(
+    "/api/vendor/menu-items",
+    { enabled: isVendor },
+  )
+  const [form, setForm] = useState(emptyForm)
+  const [isSaving, setIsSaving] = useState(false)
+  const [busyItem, setBusyItem] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
-  const user: any = session?.user
-  const role = (user as { role?: string }).role ?? "customer"
-
-  if (role !== "vendor") {
-    return <div className="p-8">Access denied: Vendor menu management only.</div>
+  async function addItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsSaving(true)
+    setMessage(null)
+    try {
+      await apiFetch("/api/menu-items", {
+        method: "POST",
+        body: JSON.stringify({
+          itemName: form.itemName,
+          category: form.category,
+          description: form.description,
+          price: Number(form.price),
+          location: form.location,
+          images: [form.image],
+        }),
+      })
+      setForm(emptyForm)
+      setMessage("Menu item submitted for admin approval.")
+      refetch()
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : "Could not save this item.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {}
-    const visibilityChange = "onvisibilitychange" in document ? "visibilitychange" : "onpagehide" in document ? "pagehide" : ""
-    if (visibilityChange) {
-      document.addEventListener(visibilityChange, handleVisibilityChange)
+  async function updateAvailability(item: MenuItemRecord) {
+    setBusyItem(item.id)
+    setMessage(null)
+    try {
+      await apiFetch(`/api/menu-items/${item.id}/availability`, {
+        method: "PATCH",
+        body: JSON.stringify({ availability: !item.availability }),
+      })
+      refetch()
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : "Could not update availability.")
+    } finally {
+      setBusyItem(null)
     }
-    return () => {
-      document.removeEventListener(visibilityChange, handleVisibilityChange)
+  }
+
+  async function deleteItem(itemId: string) {
+    if (!window.confirm("Delete this menu item?")) return
+    setBusyItem(itemId)
+    setMessage(null)
+    try {
+      await apiFetch(`/api/menu-items/${itemId}`, { method: "DELETE" })
+      refetch()
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : "Could not delete this item.")
+    } finally {
+      setBusyItem(null)
     }
-  }, [])
+  }
 
-  // Sample menu items data
-  const [menuItems, setMenuItems] = React.useState([])
-  const [isAdding, setIsAdding] = React.useState(false)
-  const [newItem, setNewItem] = React.useState({
-    name: "",
-    category: "Classic",
-    description: "",
-    price: "",
-    location: "",
-    image: "",
-    status: "pending" as "pending" | "approved" | "rejected",
-    availability: true,
-  })
+  if (sessionPending || (isVendor && isLoading)) {
+    return <main className="p-8 text-center text-muted-foreground">Loading your menu…</main>
+  }
+  if (!session?.user) {
+    return <main className="p-8 text-center">Please sign in to manage your menu.</main>
+  }
+  if (!isVendor) {
+    return <main className="p-8 text-center">Only restaurant partners can manage menu items.</main>
+  }
 
-  // Sample categories
-  const categories = ["Classic", "Vegetarian", "Meat Lovers", "Specialty", "Sides", "Beverages"]
+  const items = data?.data ?? []
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <AnimatePresence>
-        {sessionPending ? (
-          <motion.div
-            key="pending"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
-          >
-            Loading menu management...
-          </motion.div>
-        ) : user ? (
-          <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold text-[--chartjs-color-1] mb-2">
-                Manage Menu Items
-              </h1>
-              <p className="text-[--chartjs-color-6]">
-                Add, edit, and manage your menu items.
-              </p>
-            </header>
+    <main className="min-h-screen bg-[#fffdf9] px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8">
+          <p className="text-sm font-semibold text-[#d62828]">Vendor dashboard</p>
+          <h1 className="mt-2 text-3xl font-bold text-[#25201d]">Manage your menu</h1>
+          <p className="mt-2 text-muted-foreground">New items stay private until an admin approves them.</p>
+        </header>
 
-            {/* Add Menu Item Form */}
-            <section className="mb-8 card p-6">
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Add New Menu Item</h2>
-              <form className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Item Name</label>
-                  <Input
-                    value={newItem.name}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, name: e.target.value })
-                    }
-                    placeholder="e.g., Margherita Pizza"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue
-                        className="h-10 px-3 text-sm"
-                        placeholder="Select category"
-                      />
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem
-                            key={category}
-                            value={category}
-                          >
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </SelectTrigger>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Price</label>
-                  <Input
-                    type="number"
-                    value={newItem.price}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, price: e.target.value })
-                    }
-                    placeholder="e.g., 12.99"
-                    required
-                  />
-                </div>
-                <div className="lg:col-span-3">
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <Input
-                    placeholder="Describe your pizza..."
-                    value={newItem.description}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, description: e.target.value })
-                    }
-                    multiline
-                    rows={3}
-                    className="h-24 p-3 rounded-md border border-border"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Location</label>
-                  <Input
-                    placeholder="e.g., Dhaka, Mirpur"
-                    value={newItem.location}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, location: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Image URL</label>
-                  <Input
-                    placeholder="e.g., https://imgbb.example.com/pizza.jpg"
-                    value={newItem.image}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, image: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-span-3 flex gap-3">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={newItem.availability}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, availability: e.target.checked })
-                      }
-                      className="rounded-border"
-                    />
-                    Available
-                  </label>
-                  <Button
-                    type="submit"
-                    disabled={isAdding}
-                    className="flex-1 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                  >
-                    Add Menu Item
-                  </Button>
-                  <Button
-                    type="button"
-                    className="flex-1 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/90"
-                    onClick={() => setNewItem({ name: "", category: "Classic", description: "", price: "", location: "", image: "", status: "pending", availability: true })}>
-                    Reset
-                  </Button>
-                </div>
-              </form>
-            </section>
+        {(error || message) && (
+          <p className="mb-5 rounded-xl bg-[#fff2e4] p-4 text-sm text-[#6f3a24]" role="status">
+            {message ?? error}
+          </p>
+        )}
 
-            {/* Menu Items Table */}
-            <section>
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Current Menu Items</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableCell>Image</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Price</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {React.useState(() => [
-                    {
-                      id: 1,
-                      name: "Margherita Pizza",
-                      category: "Classic",
-                      price: "$12.99",
-                      status: "approved",
-                      image: "/placeholder-food.svg",
-                    },
-                    {
-                      id: 2,
-                      name: "Pepperoni Pizza",
-                      category: "Classic",
-                      price: "$14.99",
-                      status: "approved",
-                      image: "/placeholder-food.svg",
-                    },
-                    {
-                      id: 3,
-                      name: "Vegetarian Delight",
-                      category: "Vegetarian",
-                      price: "$13.49",
-                      status: "pending",
-                      image: "/placeholder-food.svg",
-                    },
-                    {
-                      id: 4,
-                      name: "Meat Lovers",
-                      category: "Meat Lovers",
-                      price: "$16.99",
-                      status: "approved",
-                      image: "/placeholder-food.svg",
-                    },
-                    {
-                      id: 5,
-                      name: "Garlic Bread",
-                      category: "Sides",
-                      price: "$5.99",
-                      status: "approved",
-                      image: "/placeholder-food.svg",
-                    },
-                  ])[0].map((item, index) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="p-4">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-10 h-10 rounded-md object-cover"
+        <Card className="mb-8 border-[#eee5db]">
+          <CardHeader>
+            <CardTitle>Add a menu item</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={addItem} className="grid gap-5 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="itemName">Item name</Label>
+                <Input
+                  id="itemName"
+                  value={form.itemName}
+                  onChange={(event) => setForm({ ...form, itemName: event.target.value })}
+                  maxLength={100}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="category">Category</Label>
+                <select
+                  id="category"
+                  value={form.category}
+                  onChange={(event) => setForm({ ...form, category: event.target.value })}
+                  className="h-10 rounded-md border border-input bg-white px-3 text-sm"
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(event) => setForm({ ...form, description: event.target.value })}
+                  maxLength={2000}
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="price">Price (BDT)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  min="0.01"
+                  max="100000"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(event) => setForm({ ...form, price: event.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="location">Restaurant location</Label>
+                <Input
+                  id="location"
+                  value={form.location}
+                  onChange={(event) => setForm({ ...form, location: event.target.value })}
+                  maxLength={120}
+                  placeholder="Area, city"
+                  required
+                />
+              </div>
+              <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="image">Image URL (HTTPS)</Label>
+                <Input
+                  id="image"
+                  type="url"
+                  value={form.image}
+                  onChange={(event) => setForm({ ...form, image: event.target.value })}
+                  placeholder="https://..."
+                  required
+                />
+              </div>
+              <Button type="submit" className="bg-[#d62828] hover:bg-[#a4161a]" disabled={isSaving}>
+                {isSaving ? "Submitting…" : "Submit for approval"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#eee5db]">
+          <CardHeader>
+            <CardTitle>Your items ({items.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Review</TableHead>
+                  <TableHead>Availability</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={item.images[0] || "/pizza-placeholder.svg"}
+                          alt=""
+                          width={48}
+                          height={48}
+                          className="size-12 rounded-lg object-cover"
+                          unoptimized
                         />
-                      </TableCell>
-                      <TableCell className="p-4">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">{item.category}</p>
-                      </TableCell>
-                      <TableCell className="p-4">
-                        <span className="px-2 py-1 text-xs font-medium bg-[#f0e7dc] text-[--chartjs-color-1]">
-                          {item.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="p-4">${item.price}</TableCell>
-                      <TableCell className="p-4">
+                        <span className="font-medium">{item.itemName}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{item.category}</TableCell>
+                    <TableCell>৳{item.price.toFixed(2)}</TableCell>
+                    <TableCell className="capitalize">{item.status}</TableCell>
+                    <TableCell>{item.availability ? "Available" : "Paused"}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
                         <Button
-                          size="sm"
                           variant="outline"
-                          className="text-sm"
+                          size="sm"
+                          disabled={busyItem === item.id || item.status !== "approved"}
+                          onClick={() => updateAvailability(item)}
                         >
-                          View
+                          {item.availability ? "Pause" : "Activate"}
                         </Button>
                         <Button
-                          size="sm"
                           variant="destructive"
-                          className="text-sm ml-1"
+                          size="sm"
+                          disabled={busyItem === item.id}
+                          onClick={() => deleteItem(item.id)}
                         >
                           Delete
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Pagination */}
-              <div className="mt-6 flex justify-end">
-                <Button size="sm" variant="outline">
-                  Prev
-                </Button>
-                <span className="mx-2">1</span>
-                <Button size="sm" variant="outline">2</Button>
-                <Button size="sm" variant="outline">3</Button>
-                <span className="mx-2">...</span>
-                <Button size="sm" variant="outline">5</Button>
-              </div>
-            </section>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
-          >
-            Sign in to manage your menu
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!items.length && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                      No menu items yet. Add your first item above.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
   )
 }

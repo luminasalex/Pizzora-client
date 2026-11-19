@@ -1,211 +1,104 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
-import { useEffect } from "react"
-import { AlertCircle, CheckCircle, Clock, Shield, User, Building, Award, TrendingUp, Layout, LogIn, LogOut } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table"
-import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Award, ClipboardList, Pizza, Store } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useApi } from "@/hooks/use-api"
 import { useSession } from "@/lib/auth-client"
-import { DashboardStats } from "@/lib/dashboard.types"
+import type { ApiEnvelope } from "@/lib/menu-types"
 
-interface VendorDashboardStats {
+type VendorStats = {
   totalItems: number
   activeItems: number
   pendingOrders: number
   acceptedOrders: number
+  subscriptionPlan: "free" | "premium"
 }
+
+const links = [
+  { href: "/dashboard/vendor/menu", label: "Manage menu", icon: Pizza },
+  { href: "/dashboard/vendor/orders", label: "Customer orders", icon: ClipboardList },
+  { href: "/dashboard/vendor/subscription", label: "Subscription", icon: Award },
+]
 
 export default function VendorDashboard() {
   const { data: session, isPending: sessionPending } = useSession()
+  const isVendor = session?.user?.role === "vendor"
+  const { data, error, isLoading } = useApi<ApiEnvelope<VendorStats>>(
+    "/api/dashboard/vendor",
+    { enabled: isVendor },
+  )
 
-  const user: any = session?.user
-  const role = (user as { role?: string }).role ?? "customer"
-
-  // If not a vendor, redirect
-  if (role !== "vendor") {
-    // In a real app, we'd use router.push('/dashboard/customer') or similar
-    return <div className="p-8">Access denied: Vendor dashboard only.</div>
+  if (sessionPending || isLoading) {
+    return <main className="p-8 text-center text-muted-foreground">Loading your dashboard…</main>
+  }
+  if (!session?.user) {
+    return <main className="p-8 text-center">Please sign in to view your dashboard.</main>
+  }
+  if (!isVendor) {
+    return <main className="p-8 text-center">This dashboard is for restaurant partners.</main>
   }
 
-  const stats: VendorDashboardStats = {
-    totalItems: 5,
-    activeItems: 3,
-    pendingOrders: 2,
-    acceptedOrders: 1,
-  }
-
-  useEffect(() => {
-    // Update navbar role display when page loads
-    const handleVisibilityChange = () => {
-      const title = document.title
-      // Could update breadcrumb or page title based on role
-    }
-    const visibilityChange = "onvisibilitychange" in document ? "visibilitychange" : "onpagehide" in document ? "pagehide" : ""
-    if (visibilityChange) {
-      document.addEventListener(visibilityChange, handleVisibilityChange)
-    }
-    return () => {
-      document.removeEventListener(visibilityChange, handleVisibilityChange)
-    }
-  }, [])
+  const stats = data?.data
+  const cards = [
+    { label: "Menu items", value: stats?.totalItems ?? "—", icon: Pizza },
+    { label: "Available items", value: stats?.activeItems ?? "—", icon: Store },
+    { label: "Pending orders", value: stats?.pendingOrders ?? "—", icon: ClipboardList },
+    {
+      label: "Subscription",
+      value: stats?.subscriptionPlan === "premium" ? "Premium" : "Free",
+      icon: Award,
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <AnimatePresence>
-        {sessionPending ? (
-          <motion.div
-            key="pending"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
-          >
-            Loading your vendor dashboard...
-          </motion.div>
-        ) : user ? (
-          <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold text-[--chartjs-color-1] mb-2">
-                Vendor Dashboard
-              </h1>
-              <p className="text-[--chartjs-color-6]">
-                Welcome back! Manage your restaurant and orders.
-              </p>
-            </header>
+    <main className="min-h-screen bg-[#fffdf9] px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8">
+          <p className="text-sm font-semibold text-[#d62828]">Restaurant partner</p>
+          <h1 className="mt-2 text-3xl font-bold text-[#25201d]">
+            Welcome, {session.user.name}
+          </h1>
+          <p className="mt-2 text-muted-foreground">Manage your menu and customer requests.</p>
+        </header>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Total Menu Items</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-[--chartjs-color-1]">{stats.totalItems}</div>
-                  <p className="text-muted-foreground">items published</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Active Items</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-600">{stats.activeItems}</div>
-                  <p className="text-muted-foreground">currently active</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Pending Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-orange-600">{stats.pendingOrders}</div>
-                  <p className="text-muted-foreground">awaiting acceptance</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Accepted Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-blue-600">{stats.acceptedOrders}</div>
-                  <p className="text-muted-foreground">being prepared</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Recent Orders Section */}
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Recent Orders</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableCustomer>Customer</TableCustomer>
-                    <TableItem>Item</TableItem>
-                    <TableStatus>Status</TableStatus>
-                    <TableAction>Action</TableAction>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="p-4">
-                      <div className="flex items-start">
-                        <div className="w-8 h-8 rounded-full bg-[#e5e5e5] flex items-center justify-center shrink-0">
-                          <div className="text-xs font-bold">C</div>
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <p className="font-medium">John Doe</p>
-                          <p className="text-xs text-muted-foreground">30 min ago</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-4">Margherita Pizza</TableCell>
-                    <TableCell className="p-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-[#f0e7dc] text-[--chartjs-color-1]">
-                        Pending
-                      </span>
-                    </TableCell>
-                    <TableCell className="p-4">
-                      <button
-                        className="px-3 py-1.5 text-sm font-medium text-[--chartjs-color-1] hover:text-white bg-[--chartjs-color-1]/10 rounded"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        className="px-3 py-1.5 text-sm font-medium ml-2 text-red-600 hover:text-white bg-red-600/10 rounded"
-                      >
-                        Reject
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </section>
-
-            {/* Quick Actions */}
-            <section>
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  className="flex-1 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  Add Menu Item
-                </button>
-                <button
-                  className="flex-1 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/90"
-                >
-                  View All Orders
-                </button>
-                <button
-                  className="flex-1 rounded-md bg-accent px-4 py-3 text-sm font-medium text-accent-foreground hover:bg-accent/90"
-                >
-                  Manage Subscription
-                </button>
-                <button
-                  className="flex-1 rounded-md bg-muted px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted/90"
-                >
-                  Profile Settings
-                </button>
-              </div>
-            </section>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
-          >
-            Sign in to view your dashboard
-          </motion.div>
+        {error && (
+          <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
+            {error}
+          </p>
         )}
-      </AnimatePresence>
-    </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map(({ label, value, icon: Icon }) => (
+            <Card key={label} className="border-[#eee5db]">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {label}
+                </CardTitle>
+                <Icon className="size-4 text-[#d62828]" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-[#25201d]">{value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <section className="mt-8 grid gap-4 md:grid-cols-3">
+          {links.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-4 rounded-2xl border border-[#eee5db] bg-white p-6 font-semibold text-[#25201d] transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <span className="flex size-11 items-center justify-center rounded-full bg-[#fff2e4] text-[#d62828]">
+                <Icon className="size-5" />
+              </span>
+              {label}
+            </Link>
+          ))}
+        </section>
+      </div>
+    </main>
   )
 }

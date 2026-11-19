@@ -29,7 +29,7 @@ export default function HomePage({
         searchQuery={searchQuery}
         error={error}
       />
-      <CategoriesSection selectedCategory={selectedCategory} />
+      <CategoriesSection />
       <BenefitsSection />
       <HowItWorksSection />
       <VendorSection />

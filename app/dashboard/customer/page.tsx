@@ -1,14 +1,26 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
-import { useEffect } from "react"
-import { AlertCircle, CheckCircle, Clock, Shield, User, Layout, LogIn, LogOut } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table"
-import { cn } from "@/lib/utils"
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useApi } from "@/hooks/use-api"
+import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import type { ApiEnvelope } from "@/lib/menu-types"
 
-interface CustomerDashboardStats {
+type CustomerOrder = {
+  id: string
+  status: "pending" | "accepted" | "rejected" | "cancelled"
+  deliveryDate: string
+  deliveryAddress: string
+  createdAt: string
+  item: { itemName: string; images: string[]; price: number } | null
+  vendor: { name: string } | null
+}
+
+type CustomerStats = {
   totalOrders: number
   pendingOrders: number
   acceptedOrders: number
@@ -17,190 +29,135 @@ interface CustomerDashboardStats {
 
 export default function CustomerDashboard() {
   const { data: session, isPending: sessionPending } = useSession()
+  const isCustomer = session?.user?.role === "customer"
+  const statsResult = useApi<ApiEnvelope<CustomerStats>>(
+    "/api/dashboard/customer",
+    { enabled: isCustomer },
+  )
+  const ordersResult = useApi<ApiEnvelope<CustomerOrder[]>>(
+    "/api/orders/my-orders",
+    { enabled: isCustomer },
+  )
+  const [busyOrder, setBusyOrder] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
-  const user: any = session?.user
-  const role = (user as { role?: string }).role ?? "customer"
-
-  // If not a customer, redirect
-  if (role !== "customer") {
-    return <div className="p-8">Access denied: Customer dashboard only.</div>
+  async function cancelOrder(orderId: string) {
+    setBusyOrder(orderId)
+    setActionError(null)
+    try {
+      await apiFetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" })
+      ordersResult.refetch()
+      statsResult.refetch()
+    } catch (cause) {
+      setActionError(cause instanceof Error ? cause.message : "Could not cancel this order.")
+    } finally {
+      setBusyOrder(null)
+    }
   }
 
-  const stats: CustomerDashboardStats = {
-    totalOrders: 8,
-    pendingOrders: 1,
-    acceptedOrders: 3,
-    rejectedOrders: 2,
+  if (sessionPending || (isCustomer && (statsResult.isLoading || ordersResult.isLoading))) {
+    return <main className="p-8 text-center text-muted-foreground">Loading your orders…</main>
+  }
+  if (!session?.user) {
+    return <main className="p-8 text-center">Please sign in to view your orders.</main>
+  }
+  if (!isCustomer) {
+    return <main className="p-8 text-center">This dashboard is for customer accounts.</main>
   }
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      // Could update page title or breadcrumbs
-    }
-    const visibilityChange = "onvisibilitychange" in document ? "visibilitychange" : "onpagehide" in document ? "pagehide" : ""
-    if (visibilityChange) {
-      document.addEventListener(visibilityChange, handleVisibilityChange)
-    }
-    return () => {
-      document.removeEventListener(visibilityChange, handleVisibilityChange)
-    }
-  }, [])
+  const stats = statsResult.data?.data
+  const orders = ordersResult.data?.data ?? []
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <AnimatePresence>
-        {sessionPending ? (
-          <motion.div
-            key="pending"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
-          >
-            Loading your customer dashboard...
-          </motion.div>
-        ) : user ? (
-          <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold text-[--chartjs-color-1] mb-2">
-                Customer Dashboard
-              </h1>
-              <p className="text-[--chartjs-color-6]">
-                Your order history and statistics.
-              </p>
-            </header>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Total Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-[--chartjs-color-1]">{stats.totalOrders}</div>
-                  <p className="text-muted-foreground">placed</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Pending</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-orange-600">{stats.pendingOrders}</div>
-                  <p className="text-muted-foreground">awaiting delivery</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Accepted</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-600">{stats.acceptedOrders}</div>
-                  <p className="text-muted-foreground">being prepared</p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle>Rejected</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-red-600">{stats.rejectedOrders}</div>
-                  <p className="text-muted-foreground">cancelled by restaurant</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* My Orders Section */}
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">My Orders</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableCell>Pizza</TableCell>
-                    <TableCell>Vendor</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Date</TableCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-bg bg-[#f3e8e5] flex items-center justify-center shrink-0">
-                          <div className="text-sm font-bold">🍕</div>
-                        </div>
-                        <div>
-                          <p className="font-medium">Margherita</p>
-                          <p className="text-xs text-muted-foreground">from Vittorio's</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-4">Vittorio's Pizzeria</TableCell>
-                    <TableCell className="p-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-[#f0e7dc] text-[--chartjs-color-1]">
-                        Pending
-                      </span>
-                    </TableCell>
-                    <TableCell className="p-4">Nov 20, 2026</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-bg bg-[#f3e8e5] flex items-center justify-center shrink-0">
-                          <div className="text-sm font-bold">🍕</div>
-                        </div>
-                        <div>
-                          <p className="font-medium">Pepperoni</p>
-                          <p className="text-xs text-muted-foreground">from Vittorio's</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-4">Vittorio's Pizzeria</TableCell>
-                    <TableCell className="p-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-[#dcffdd] text-green-600">
-                        Accepted
-                      </span>
-                    </TableCell>
-                    <TableCell className="p-4">Nov 18, 2026</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </section>
-
-            {/* Order Actions */}
-            <section>
-              <h2 className="text-xl font-semibold text-[--chartjs-color-1] mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  className="flex-1 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  Place New Order
-                </button>
-                <button
-                  className="flex-1 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/90"
-                >
-                  View Order History
-                </button>
-              </div>
-            </section>
+    <main className="min-h-screen bg-[#fffdf9] px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#d62828]">Your Pizzora account</p>
+            <h1 className="mt-2 text-3xl font-bold text-[#25201d]">My orders</h1>
           </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="min-h-[200px] flex items-center justify-center"
+          <Link
+            href="/menu"
+            className="rounded-full bg-[#d62828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#a4161a]"
           >
-            Sign in to view your dashboard
-          </motion.div>
+            Browse menu
+          </Link>
+        </header>
+
+        {(statsResult.error || ordersResult.error || actionError) && (
+          <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
+            {actionError ?? statsResult.error ?? ordersResult.error}
+          </p>
         )}
-      </AnimatePresence>
-    </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["Total orders", stats?.totalOrders],
+            ["Pending", stats?.pendingOrders],
+            ["Accepted", stats?.acceptedOrders],
+            ["Rejected", stats?.rejectedOrders],
+          ].map(([label, value]) => (
+            <Card key={String(label)} className="border-[#eee5db]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-[#25201d]">{value ?? "—"}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <section className="mt-8 space-y-4">
+          {orders.map((order) => (
+            <Card key={order.id} className="border-[#eee5db]">
+              <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
+                <Image
+                  src={order.item?.images[0] || "/pizza-placeholder.svg"}
+                  alt=""
+                  width={88}
+                  height={88}
+                  className="size-[88px] rounded-2xl object-cover"
+                  unoptimized
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 className="font-bold text-[#25201d]">
+                      {order.item?.itemName ?? "Removed menu item"}
+                    </h2>
+                    <span className="rounded-full bg-[#fff2e4] px-3 py-1 text-xs font-semibold capitalize text-[#8c4a2d]">
+                      {order.status}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-[#82776f]">
+                    {order.vendor?.name ?? "Restaurant"} · Delivery {order.deliveryDate}
+                  </p>
+                  <p className="mt-2 truncate text-sm text-[#6f655e]">{order.deliveryAddress}</p>
+                </div>
+                {order.status === "pending" && (
+                  <Button
+                    variant="outline"
+                    disabled={busyOrder === order.id}
+                    onClick={() => cancelOrder(order.id)}
+                  >
+                    Cancel request
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+          {!orders.length && (
+            <Card className="border-[#eee5db]">
+              <CardContent className="py-14 text-center">
+                <p className="font-semibold text-[#25201d]">No orders yet</p>
+                <p className="mt-2 text-sm text-[#82776f]">
+                  Find a local favorite and place your first request.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+      </div>
+    </main>
   )
 }
