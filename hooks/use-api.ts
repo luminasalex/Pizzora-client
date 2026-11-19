@@ -12,43 +12,46 @@ type UseApiOptions = {
 export function useApi<T>(path: string, options: UseApiOptions = {}) {
   const { enabled = true, method = "GET", body } = options
   const bodyText = body === undefined ? undefined : JSON.stringify(body)
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(enabled)
   const [requestNumber, setRequestNumber] = useState(0)
+  const requestKey = `${method}:${path}:${bodyText ?? ""}:${requestNumber}`
+  const [result, setResult] = useState<{
+    key: string
+    data: T | null
+    error: string | null
+  } | null>(null)
 
   useEffect(() => {
-    if (!enabled) {
-      setIsLoading(false)
-      return
-    }
+    if (!enabled) return
 
     const controller = new AbortController()
-    setIsLoading(true)
-    setError(null)
 
     apiFetch<T>(path, {
       method,
       body: bodyText,
       signal: controller.signal,
     })
-      .then(setData)
+      .then((data) => setResult({ key: requestKey, data, error: null }))
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return
-        setError(
-          cause instanceof Error ? cause.message : "The request failed.",
-        )
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
+        setResult({
+          key: requestKey,
+          data: null,
+          error: cause instanceof Error ? cause.message : "The request failed.",
+        })
       })
 
     return () => controller.abort()
-  }, [bodyText, enabled, method, path, requestNumber])
+  }, [bodyText, enabled, method, path, requestKey])
 
   const refetch = useCallback(() => {
     setRequestNumber((current) => current + 1)
   }, [])
 
-  return { data, error, isLoading, refetch }
+  const currentResult = result?.key === requestKey ? result : null
+  return {
+    data: currentResult?.data ?? null,
+    error: currentResult?.error ?? null,
+    isLoading: enabled && currentResult === null,
+    refetch,
+  }
 }

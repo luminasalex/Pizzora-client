@@ -55,14 +55,10 @@ function Avatar({
   user: NavUser
   size?: number
 }) {
-  const [failed, setFailed] = useState(false)
+  const [failedImage, setFailedImage] = useState<string | null>(null)
   const initial = (user.name?.trim()?.[0] ?? user.email?.[0] ?? "U").toUpperCase()
 
-  useEffect(() => {
-    setFailed(false)
-  }, [user.image])
-
-  if (user.image && !failed) {
+  if (user.image && failedImage !== user.image) {
     return (
       <Image
         src={user.image}
@@ -70,7 +66,7 @@ function Avatar({
         width={size}
         height={size}
         unoptimized
-        onError={() => setFailed(true)}
+        onError={() => setFailedImage(user.image ?? null)}
         className="shrink-0 rounded-full object-cover"
         style={{ width: size, height: size }}
       />
