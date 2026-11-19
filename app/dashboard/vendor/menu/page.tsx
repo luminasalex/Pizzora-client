@@ -13,7 +13,6 @@ import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import type { ApiEnvelope, MenuItemRecord } from "@/lib/menu-types"
-import { uploadImage } from "@/lib/uploads"
 
 const categories = [
   "Classic Pizzas",
@@ -40,7 +39,7 @@ export default function VendorMenuManagement() {
     { enabled: isVendor },
   )
   const [form, setForm] = useState(emptyForm)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState("")
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [busyItem, setBusyItem] = useState<string | null>(null)
@@ -51,8 +50,7 @@ export default function VendorMenuManagement() {
     setIsSaving(true)
     setMessage(null)
     try {
-      if (!editingItemId && !imageFile) throw new Error("Choose a menu item image.")
-      const imageUrl = imageFile ? await uploadImage(imageFile) : undefined
+      if (!editingItemId && !imageUrl) throw new Error("Enter a menu item image URL.")
       await apiFetch(
         editingItemId ? `/api/menu-items/${editingItemId}` : "/api/menu-items",
         {
@@ -68,7 +66,7 @@ export default function VendorMenuManagement() {
         },
       )
       setForm(emptyForm)
-      setImageFile(null)
+      setImageUrl("")
       setEditingItemId(null)
       setMessage(
         editingItemId
@@ -92,12 +90,12 @@ export default function VendorMenuManagement() {
       price: String(item.price),
       location: item.location,
     })
-    setImageFile(null)
+    setImageUrl(item.images?.[0] || "")
   }
 
   function resetForm() {
     setForm(emptyForm)
-    setImageFile(null)
+    setImageUrl("")
     setEditingItemId(null)
   }
 
@@ -222,19 +220,17 @@ export default function VendorMenuManagement() {
                   required
                 />
               </div>
-              <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="image">Menu item image</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="image">Menu item image URL</Label>
                 <Input
                   id="image"
-                  key={editingItemId ?? "new-item"}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-                  required={!editingItemId}
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  placeholder="https://example.com/pizza.png"
                 />
                 {editingItemId && (
                   <p className="text-xs text-muted-foreground">
-                    Choose a new image only if you want to replace the current one.
+                    Enter a new image URL only if you want to replace the current one.
                   </p>
                 )}
               </div>
@@ -244,7 +240,7 @@ export default function VendorMenuManagement() {
                 </Button>
                 {editingItemId && (
                   <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel edit
+                    <Pencil className="mr-1 size-3.5" />Cancel edit
                   </Button>
                 )}
               </div>
@@ -295,8 +291,7 @@ export default function VendorMenuManagement() {
                           size="sm"
                           onClick={() => editItem(item)}
                         >
-                          <Pencil className="mr-1 size-3.5" />
-                          Edit
+                          <Pencil className="mr-1 size-3.5" />Edit
                         </Button>
                         <Button
                           variant="outline"
@@ -318,13 +313,6 @@ export default function VendorMenuManagement() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {!items.length && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                      No menu items yet. Add your first item above.
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </CardContent>

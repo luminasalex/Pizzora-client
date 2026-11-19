@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSession } from "@/lib/auth-client"
 import { apiFetch } from "@/lib/api"
-import { uploadImage } from "@/lib/uploads"
 
 type ProfileUser = {
   id: string
@@ -21,7 +20,7 @@ type ProfileUser = {
 function ProfileEditor({ user }: { user: ProfileUser }) {
   const [name, setName] = useState(user.name)
   const [businessName, setBusinessName] = useState(user.businessName ?? "")
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState(user.image ?? "")
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -30,12 +29,11 @@ function ProfileEditor({ user }: { user: ProfileUser }) {
     setIsSaving(true)
     setMessage(null)
     try {
-      const image = imageFile ? await uploadImage(imageFile) : user.image
       await apiFetch("/api/users/profile", {
         method: "PATCH",
         body: JSON.stringify({
           name,
-          image,
+          image: imageUrl || undefined,
           ...(user.role === "vendor" ? { businessName } : {}),
         }),
       })
@@ -86,15 +84,16 @@ function ProfileEditor({ user }: { user: ProfileUser }) {
             </div>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="profile-image">Profile image</Label>
+            <Label htmlFor="profile-image">Profile image URL</Label>
             <Input
               id="profile-image"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
+              type="url"
+              value={imageUrl}
+              onChange={(event) => setImageUrl(event.target.value)}
+              placeholder="https://example.com/avatar.png"
             />
             <p className="text-xs text-muted-foreground">
-              JPEG, PNG, or WebP; maximum 4 MB.
+              Enter a valid HTTPS image URL (maximum 4 MB recommended).
             </p>
           </div>
           {message && (
