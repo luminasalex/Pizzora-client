@@ -4,7 +4,7 @@ import { inferAdditionalFields } from "better-auth/client/plugins"
 export type UserRole = "customer" | "vendor" | "admin"
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001",
   plugins: [
     inferAdditionalFields<
       undefined,

@@ -1,30 +1,29 @@
 "use client"
 
-import { X, Home, PizzaSlice, ArrowRight } from "lucide-react"
+import { Home, Pizza, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 
 export default function NotFound() {
   return (
-    <section
-      className="min-h-screen bg-[#211b18] text-white flex flex-col items-center justify-center pt-12"
-    >
+    <section className="min-h-screen bg-[#211b18] text-white flex flex-col items-center justify-center px-4 pt-12">
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 text-6xl text-[#d62828] mb-6">
-          <PizzaSlice />
+        <div className="inline-flex items-center gap-3 text-6xl font-bold text-[#d62828] mb-6">
+          <Pizza size={56} />
           <span>404</span>
         </div>
 
         <h1 className="text-4xl font-bold tracking-[-0.04em] mb-4">
-            Page not found
+          Page not found
         </h1>
 
-        <p className="text-[#b4372a] max-w-lg mb-8">
-            The page you're looking for doesn't exist,<br />
-            maybe it moved or was never baked.
+        <p className="text-white/70 max-w-lg mx-auto mb-8">
+          The page you&apos;re looking for doesn&apos;t exist,
+          <br />
+          maybe it moved or was never baked.
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex justify-center gap-4">
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-full bg-[#d62828] px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-[#a4161a]"
@@ -41,17 +40,11 @@ export default function NotFound() {
       </div>
 
       <motion.div
-        className="mt-16 animate-bounce"
-        initial={false}
-        animate={{
-          y: [0, -20, 0],
-        }}
-        transition={{ duration: 2 }}
+        className="mt-16 text-[#f77f00]"
+        animate={{ y: [0, -20, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <PizzaSlice
-          className="w-12 h-12 text-[#f77f00]"
-          size={32}
-        />
+        <Pizza size={48} />
       </motion.div>
     </section>
   )
