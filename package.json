@@ -4,15 +4,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/next-server.mjs dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/next-server.mjs start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@next/env": "^16.4.5",
     "@shadcn/react": "^0.3.1",
     "better-auth": "^1.7.26",
     "class-variance-authority": "^0.7.1",

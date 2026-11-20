@@ -16,6 +16,7 @@ npm run dev
 ```
 
 Set `NEXT_PUBLIC_API_URL` in `.env.local` to the Express API origin, for example `http://localhost:3001`.
+Set `NEXT_PUBLIC_APP_URL` to the website URL with an explicit port, for example `http://localhost:4000`. The `dev` and `start` scripts use that port to run Next.js and as the site's metadata base URL. For production behind a reverse proxy, set `PORT` to the internal server port; it takes precedence over the port in `NEXT_PUBLIC_APP_URL`.
 
 Useful checks:
 

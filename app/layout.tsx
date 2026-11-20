@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils";
 import Navber from "@/components/home/Navber";
 import Footer from "@/components/home/Footer";
 
+export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL as string,
+  ),
+}
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'})
 
