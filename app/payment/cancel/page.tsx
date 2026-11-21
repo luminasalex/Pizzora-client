@@ -1,6 +1,18 @@
+"use client"
+
+import { useEffect, useRef } from "react"
 import Link from "next/link"
+import { notify } from "@/lib/notifications"
 
 export default function PaymentCancelPage() {
+  const hasNotified = useRef(false)
+
+  useEffect(() => {
+    if (hasNotified.current) return
+    hasNotified.current = true
+    notify("warning", "Checkout cancelled", "Your subscription has not changed.")
+  }, [])
+
   return (
     <main className="flex min-h-[65vh] items-center justify-center px-5 py-12">
       <section className="max-w-xl rounded-3xl border border-[#eee5db] bg-white p-8 text-center shadow-sm sm:p-12">

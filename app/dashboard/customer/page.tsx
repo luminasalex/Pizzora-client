@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import { getErrorMessage, notify } from "@/lib/notifications"
 import type { ApiEnvelope } from "@/lib/menu-types"
 
 type CustomerOrder = {
@@ -39,17 +40,16 @@ export default function CustomerDashboard() {
     { enabled: isCustomer },
   )
   const [busyOrder, setBusyOrder] = useState<string | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
 
   async function cancelOrder(orderId: string) {
     setBusyOrder(orderId)
-    setActionError(null)
     try {
       await apiFetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" })
       ordersResult.refetch()
       statsResult.refetch()
+      notify("success", "Order cancelled", "Your pending request was cancelled.")
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : "Could not cancel this order.")
+      notify("error", "Could not cancel order", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusyOrder(null)
     }
@@ -84,9 +84,9 @@ export default function CustomerDashboard() {
           </Link>
         </header>
 
-        {(statsResult.error || ordersResult.error || actionError) && (
+        {(statsResult.error || ordersResult.error) && (
           <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
-            {actionError ?? statsResult.error ?? ordersResult.error}
+            {statsResult.error ?? ordersResult.error}
           </p>
         )}
 

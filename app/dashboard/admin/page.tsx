@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import { getErrorMessage, notify } from "@/lib/notifications"
 import type { ApiEnvelope } from "@/lib/menu-types"
 
 type AdminStats = {
@@ -66,11 +67,9 @@ export default function AdminDashboard() {
     { enabled: isAdmin },
   )
   const [busy, setBusy] = useState<string | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
 
   async function updateMenuItem(id: string, status: "approved" | "rejected") {
     setBusy(id)
-    setActionError(null)
     try {
       await apiFetch(`/api/admin/menu-items/${id}/status`, {
         method: "PATCH",
@@ -78,8 +77,12 @@ export default function AdminDashboard() {
       })
       menuResult.refetch()
       statsResult.refetch()
+      notify(
+        "success",
+        status === "approved" ? "Menu item approved" : "Menu item rejected",
+      )
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : "Could not update menu item.")
+      notify("error", "Could not update menu item", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusy(null)
     }
@@ -87,14 +90,14 @@ export default function AdminDashboard() {
 
   async function toggleBlocked(user: AdminUser) {
     setBusy(user.id)
-    setActionError(null)
     try {
       await apiFetch(`/api/admin/users/${user.id}/${user.isBlocked ? "unblock" : "block"}`, {
         method: "PATCH",
       })
       userResult.refetch()
+      notify("success", user.isBlocked ? "User unblocked" : "User blocked")
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : "Could not update user.")
+      notify("error", "Could not update user", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusy(null)
     }
@@ -136,14 +139,12 @@ export default function AdminDashboard() {
           <p className="mt-2 text-muted-foreground">Review listings and manage Pizzora accounts.</p>
         </header>
 
-        {(actionError ||
-          statsResult.error ||
+        {(statsResult.error ||
           menuResult.error ||
           userResult.error ||
           transactionResult.error) && (
           <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
-            {actionError ??
-              statsResult.error ??
+            {statsResult.error ??
               menuResult.error ??
               userResult.error ??
               transactionResult.error}

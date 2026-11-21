@@ -8,6 +8,7 @@ import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import type { ApiEnvelope } from "@/lib/menu-types"
+import { getErrorMessage, notify } from "@/lib/notifications"
 
 type Subscription = {
   plan: "free" | "premium"
@@ -34,12 +35,10 @@ export default function VendorSubscription() {
   )
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
   const plan = data?.data.plan ?? "free"
 
   async function upgrade() {
     setIsCheckingOut(true)
-    setActionError(null)
     try {
       const result = await apiFetch<ApiEnvelope<{ url: string }>>(
         "/api/subscriptions/checkout",
@@ -54,23 +53,19 @@ export default function VendorSubscription() {
       }
       window.location.assign(checkoutUrl.href)
     } catch (cause) {
-      setActionError(
-        cause instanceof Error ? cause.message : "Could not start Premium checkout.",
-      )
+      notify("error", "Could not start Premium checkout", getErrorMessage(cause, "Please try again."))
       setIsCheckingOut(false)
     }
   }
 
   async function cancelRenewal() {
     setIsCancelling(true)
-    setActionError(null)
     try {
       await apiFetch("/api/subscriptions/cancel", { method: "POST" })
       refetch()
+      notify("success", "Subscription renewal cancelled")
     } catch (cause) {
-      setActionError(
-        cause instanceof Error ? cause.message : "Could not cancel this subscription.",
-      )
+      notify("error", "Could not cancel subscription", getErrorMessage(cause, "Please try again."))
     } finally {
       setIsCancelling(false)
     }
@@ -97,9 +92,9 @@ export default function VendorSubscription() {
           </p>
         </header>
 
-        {(error || actionError) && (
+        {error && (
           <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
-            {actionError ?? error}
+            {error}
           </p>
         )}
 

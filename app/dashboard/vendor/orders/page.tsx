@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import { getErrorMessage, notify } from "@/lib/notifications"
 import type { ApiEnvelope } from "@/lib/menu-types"
 
 type Order = {
@@ -27,17 +28,19 @@ export default function VendorOrders() {
     "/api/vendor/orders",
     { enabled: isVendor },
   )
-  const [actionError, setActionError] = useState<string | null>(null)
   const [busyOrder, setBusyOrder] = useState<string | null>(null)
 
   async function processOrder(orderId: string, action: "accept" | "reject") {
     setBusyOrder(orderId)
-    setActionError(null)
     try {
       await apiFetch(`/api/orders/${orderId}/${action}`, { method: "PATCH" })
       refetch()
+      notify(
+        "success",
+        action === "accept" ? "Order accepted" : "Order rejected",
+      )
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : "Could not update order.")
+      notify("error", "Could not update order", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusyOrder(null)
     }
@@ -64,9 +67,9 @@ export default function VendorOrders() {
           <p className="mt-2 text-muted-foreground">Review and respond to requests for your restaurant.</p>
         </header>
 
-        {(error || actionError) && (
+        {error && (
           <p className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">
-            {actionError ?? error}
+            {error}
           </p>
         )}
 

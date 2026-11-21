@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import Image from "next/image"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
+import { getErrorMessage, notify } from "@/lib/notifications"
 import type { ApiEnvelope, MenuItemRecord } from "@/lib/menu-types"
 
 const categories = [
@@ -33,6 +34,7 @@ const emptyForm = {
 }
 
 export default function VendorMenuManagement() {
+  const router = useRouter()
   const { data: session, isPending: sessionPending } = useSession()
   const isVendor = session?.user?.role === "vendor"
   const { data, error, isLoading, refetch } = useApi<ApiEnvelope<MenuItemRecord[]>>(
@@ -44,13 +46,13 @@ export default function VendorMenuManagement() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [busyItem, setBusyItem] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
 
   async function addItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSaving(true)
     try {
       if (!editingItemId && !imageUrl) throw new Error("Enter a menu item image URL.")
+      const isEditing = Boolean(editingItemId)
       await apiFetch(
         editingItemId ? `/api/menu-items/${editingItemId}` : "/api/menu-items",
         {
@@ -65,12 +67,27 @@ export default function VendorMenuManagement() {
           }),
         },
       )
+      notify(
+        "success",
+        isEditing ? "Menu item updated" : "Menu item submitted",
+        isEditing
+          ? "Your changes were sent for approval."
+          : "Your menu item is awaiting admin approval.",
+      )
       setForm(emptyForm)
       setImageUrl("")
       setEditingItemId(null)
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not save this item.")
+      const description = getErrorMessage(cause, "Could not save this item.")
+      if (description.includes("Upgrade to Premium")) {
+        notify("warning", "Premium plan required", description, {
+          children: "View plans",
+          onClick: () => router.push("/dashboard/vendor/subscription"),
+        })
+      } else {
+        notify("error", "Could not save menu item", description)
+      }
     } finally {
       setIsSaving(false)
     }
@@ -101,9 +118,13 @@ export default function VendorMenuManagement() {
         method: "PATCH",
         body: JSON.stringify({ availability: !item.availability }),
       })
+      notify(
+        "success",
+        item.availability ? "Menu item paused" : "Menu item made available",
+      )
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not update availability.")
+      notify("error", "Could not update availability", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusyItem(null)
     }
@@ -114,9 +135,10 @@ export default function VendorMenuManagement() {
     setBusyItem(itemId)
     try {
       await apiFetch(`/api/menu-items/${itemId}`, { method: "DELETE" })
+      notify("success", "Menu item deleted")
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not delete this item.")
+      notify("error", "Could not delete menu item", getErrorMessage(cause, "Please try again."))
     } finally {
       setBusyItem(null)
     }
@@ -133,8 +155,6 @@ export default function VendorMenuManagement() {
   }
 
   const items = data?.data ?? []
-  const upgradeRequired = message?.includes("Upgrade to Premium")
-
   return (
     <main className="min-h-screen bg-[#fffdf9] px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-7xl">
@@ -144,18 +164,10 @@ export default function VendorMenuManagement() {
           <p className="mt-2 text-muted-foreground">New items stay private until an admin approves them.</p>
         </header>
 
-        {(error || message) && (
-          <div className="mb-5 rounded-xl bg-[#fff2e4] p-4 text-sm text-[#6f3a24]" role="status">
-            <p>{message ?? error}</p>
-            {upgradeRequired && (
-              <Link
-                href="/dashboard/vendor/subscription"
-                className="mt-2 inline-block font-semibold underline"
-              >
-                View Premium plans
-              </Link>
-            )}
-          </div>
+        {error && (
+          <p className="mb-5 rounded-xl bg-[#fff2e4] p-4 text-sm text-[#6f3a24]" role="alert">
+            {error}
+          </p>
         )}
 
         <Card className="mb-8 border-[#eee5db]">

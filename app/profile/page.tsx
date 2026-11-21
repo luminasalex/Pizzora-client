@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSession } from "@/lib/auth-client"
 import { apiFetch } from "@/lib/api"
+import { getErrorMessage, notify } from "@/lib/notifications"
 
 type ProfileUser = {
   id: string
@@ -22,12 +23,10 @@ function ProfileEditor({ user }: { user: ProfileUser }) {
   const [businessName, setBusinessName] = useState(user.businessName ?? "")
   const [imageUrl, setImageUrl] = useState(user.image ?? "")
   const [isSaving, setIsSaving] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSaving(true)
-    setMessage(null)
     try {
       await apiFetch("/api/users/profile", {
         method: "PATCH",
@@ -37,9 +36,9 @@ function ProfileEditor({ user }: { user: ProfileUser }) {
           ...(user.role === "vendor" ? { businessName } : {}),
         }),
       })
-      setMessage("Profile updated successfully.")
+      notify("success", "Profile updated")
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not update your profile.")
+      notify("error", "Could not update profile", getErrorMessage(cause, "Please try again."))
     } finally {
       setIsSaving(false)
     }
@@ -96,11 +95,6 @@ function ProfileEditor({ user }: { user: ProfileUser }) {
               Enter a valid HTTPS image URL (maximum 4 MB recommended).
             </p>
           </div>
-          {message && (
-            <p className="text-sm text-[#6f655e]" role="status">
-              {message}
-            </p>
-          )}
           <Button type="submit" className="bg-[#d62828] hover:bg-[#a4161a]" disabled={isSaving}>
             {isSaving ? "Saving…" : "Save changes"}
           </Button>

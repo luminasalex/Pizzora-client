@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { signIn, signUp, useSession } from "@/lib/auth-client";
 import { clearCachedApiToken } from "@/lib/api";
+import { getErrorMessage, notify } from "@/lib/notifications"
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 type Role = "customer" | "vendor";
@@ -40,7 +41,6 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Already signed in? Leave the auth pages.
@@ -66,15 +66,13 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
     if (!isPasswordValid) {
-      setError("Password does not meet all requirements.");
+      notify("error", "Invalid password", "Password does not meet all requirements.");
       return;
     }
 
     if (!doPasswordsMatch) {
-      setError("Passwords do not match.");
+      notify("error", "Passwords do not match", "Enter the same password in both fields.");
       return;
     }
 
@@ -89,22 +87,22 @@ export default function SignUpPage() {
         businessName: role === "vendor" ? businessName : undefined,
       });
       if (error) {
-        setError(error.message ?? "Could not create account.");
+        notify("error", "Could not create account", error.message ?? "Please try again.");
         return;
       }
+      notify("success", "Account created successfully")
       clearCachedApiToken();
       // Better Auth signs the user in on successful sign-up.
       router.push("/");
       router.refresh();
-    } catch {
-      setError("Sign up failed. Please try again.");
+    } catch (cause) {
+      notify("error", "Sign up failed", getErrorMessage(cause, "Please try again."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignUp = async () => {
-    setError(null);
     setIsSubmitting(true);
     try {
       const { error } = await signIn.social({
@@ -113,12 +111,12 @@ export default function SignUpPage() {
         requestSignUp: true,
       });
       if (error) {
-        setError(error.message ?? "Google sign up failed.");
+        notify("error", "Google sign up failed", error.message ?? "Please try again.");
         setIsSubmitting(false);
       }
       // On success the Better Auth client redirects to Google automatically.
-    } catch {
-      setError("Google sign up failed. Please try again.");
+    } catch (cause) {
+      notify("error", "Google sign up failed", getErrorMessage(cause, "Please try again."));
       setIsSubmitting(false);
     }
   };
@@ -388,10 +386,6 @@ export default function SignUpPage() {
             )}
           </Button>
         </form>
-
-        {error && (
-          <p className="text-sm text-destructive mt-3 text-center">{error}</p>
-        )}
 
         <p className="text-sm text-muted-foreground mt-4 text-center">
           Already have an account?{" "}

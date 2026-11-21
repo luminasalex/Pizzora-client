@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { signIn, useSession } from "@/lib/auth-client";
 import { clearCachedApiToken } from "@/lib/api";
+import { getErrorMessage, notify } from "@/lib/notifications"
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -19,7 +20,6 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Already signed in? Leave the auth pages.
@@ -29,26 +29,25 @@ export default function SignInPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsSubmitting(true);
     try {
       const { error } = await signIn.email({ email, password });
       if (error) {
-        setError(error.message ?? "Invalid email or password.");
+        notify("error", "Could not sign in", error.message ?? "Invalid email or password.");
         return;
       }
+      notify("success", "Signed in successfully")
       clearCachedApiToken();
       router.push("/");
       router.refresh();
-    } catch {
-      setError("Sign in failed. Please try again.");
+    } catch (cause) {
+      notify("error", "Sign in failed", getErrorMessage(cause, "Please try again."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setError(null);
     setIsSubmitting(true);
     try {
       const { error } = await signIn.social({
@@ -56,12 +55,12 @@ export default function SignInPage() {
         callbackURL: "/",
       });
       if (error) {
-        setError(error.message ?? "Google sign in failed.");
+        notify("error", "Google sign in failed", error.message ?? "Please try again.");
         setIsSubmitting(false);
       }
       // On success the Better Auth client redirects to Google automatically.
-    } catch {
-      setError("Google sign in failed. Please try again.");
+    } catch (cause) {
+      notify("error", "Google sign in failed", getErrorMessage(cause, "Please try again."));
       setIsSubmitting(false);
     }
   };
@@ -159,8 +158,6 @@ export default function SignInPage() {
             )}
           </Button>
         </form>
-
-        {error && <p className="text-sm text-destructive mt-3 text-center">{error}</p>}
 
         <p className="text-sm text-muted-foreground mt-4 text-center">
           Don&apos;t have an account?{" "}

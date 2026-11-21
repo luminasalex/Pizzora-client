@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CheckCircle2 } from "lucide-react"
 import { useApi } from "@/hooks/use-api"
 import type { ApiEnvelope } from "@/lib/menu-types"
 import { useSession } from "@/lib/auth-client"
+import { notify } from "@/lib/notifications"
 
 type Subscription = {
   plan: "free" | "premium"
@@ -21,7 +22,25 @@ export default function PaymentSuccessPage() {
     { enabled: isVendor },
   )
   const [attempts, setAttempts] = useState(0)
+  const hasNotifiedSuccess = useRef(false)
+  const hasNotifiedPending = useRef(false)
   const isPremium = data?.data.plan === "premium"
+
+  useEffect(() => {
+    if (!isPremium || hasNotifiedSuccess.current) return
+    hasNotifiedSuccess.current = true
+    notify("success", "Payment confirmed", "Premium is active on your vendor account.")
+  }, [isPremium])
+
+  useEffect(() => {
+    if (attempts < 4 || isPremium || hasNotifiedPending.current) return
+    hasNotifiedPending.current = true
+    notify(
+      "info",
+      "Payment confirmation pending",
+      "Payment was received. Premium will activate once Stripe confirmation finishes.",
+    )
+  }, [attempts, isPremium])
 
   useEffect(() => {
     if (!isVendor || isPremium || attempts >= 4) return

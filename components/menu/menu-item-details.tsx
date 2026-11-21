@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useSession } from "@/lib/auth-client"
+import { getErrorMessage, notify } from "@/lib/notifications"
 
 type MenuItemDetailsProps = {
   itemId: string
@@ -25,7 +26,6 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
   const [deliveryAddress, setDeliveryAddress] = useState("")
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderMessage, setOrderMessage] = useState<string | null>(null)
   const item = data?.data
   const role = session?.user?.role ?? "customer"
 
@@ -33,7 +33,6 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
     event.preventDefault()
     if (!item) return
     setIsSubmitting(true)
-    setOrderMessage(null)
     try {
       await apiFetch("/api/orders", {
         method: "POST",
@@ -44,13 +43,11 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
           message,
         }),
       })
-      setOrderMessage("Your order request was sent to the restaurant.")
+      notify("success", "Order request sent", "The restaurant will review your request.")
       setDeliveryAddress("")
       setMessage("")
     } catch (cause) {
-      setOrderMessage(
-        cause instanceof Error ? cause.message : "The order could not be placed.",
-      )
+      notify("error", "Could not place order", getErrorMessage(cause, "Please try again."))
     } finally {
       setIsSubmitting(false)
     }
@@ -187,11 +184,6 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
               >
                 {isSubmitting ? "Sending request…" : "Place order request"}
               </Button>
-              {orderMessage && (
-                <p className="text-sm text-[#6f655e]" role="status">
-                  {orderMessage}
-                </p>
-              )}
             </form>
           )}
         </section>
