@@ -95,9 +95,9 @@ const categoryLabels: Record<string, string> = {
   classic: "Classic Pizzas",
   vegetarian: "Vegetarian Pizzas",
   "meat-lovers": "Meat Lovers",
-  specialty: "Specialty & Gourmet",
+  specialty: "Specialty / Gourmet Pizzas",
   sides: "Sides & Appetizers",
-  drinks: "Drinks & Desserts",
+  drinks: "Beverages & Desserts",
 }
 
 export default function CategoriesSection() {
