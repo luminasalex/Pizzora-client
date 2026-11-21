@@ -3,6 +3,7 @@ import "./globals.css"
 import { cn } from "@/lib/utils";
 import Navber from "@/components/home/Navber";
 import Footer from "@/components/home/Footer";
+import { Toaster } from "@/components/ui/toast";
 
 export const metadata = {
   metadataBase: new URL(
@@ -32,6 +33,7 @@ export default function RootLayout({
         <Navber />
         {children}
         <Footer />
+        <Toaster />
       </body>
     </html>
   )

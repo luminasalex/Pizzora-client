@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react"
 import Image from "next/image"
 import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Toaster, useToast } from "@/components/ui/toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -48,7 +49,6 @@ export default function VendorMenuManagement() {
   async function addItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSaving(true)
-    setMessage(null)
     try {
       if (!editingItemId && !imageUrl) throw new Error("Enter a menu item image URL.")
       await apiFetch(
@@ -65,17 +65,23 @@ export default function VendorMenuManagement() {
           }),
         },
       )
+      toast({
+        title: editingItemId ? "Updated" : "Submitted for approval",
+        description: editingItemId
+          ? "Menu item updated. Admin approval may be required again."
+          : "Menu item submitted for admin approval.",
+        type: editingItemId ? "success" : "info",
+      })
       setForm(emptyForm)
       setImageUrl("")
       setEditingItemId(null)
-      setMessage(
-        editingItemId
-          ? "Menu item updated. Admin approval may be required again."
-          : "Menu item submitted for admin approval.",
-      )
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not save this item.")
+      toast({
+        title: "Error",
+        description: cause instanceof Error ? cause.message : "Could not save this item.",
+        type: "error",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -101,15 +107,23 @@ export default function VendorMenuManagement() {
 
   async function updateAvailability(item: MenuItemRecord) {
     setBusyItem(item.id)
-    setMessage(null)
     try {
       await apiFetch(`/api/menu-items/${item.id}/availability`, {
         method: "PATCH",
         body: JSON.stringify({ availability: !item.availability }),
       })
+      toast({
+        title: item.availability ? "Activated" : "Paused",
+        description: `${item.itemName} is now ${item.availability ? "available" : "paused"}.`,
+        type: "success",
+      })
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not update availability.")
+      toast({
+        title: "Error",
+        description: cause instanceof Error ? cause.message : "Could not update availability.",
+        type: "error",
+      })
     } finally {
       setBusyItem(null)
     }
@@ -118,12 +132,20 @@ export default function VendorMenuManagement() {
   async function deleteItem(itemId: string) {
     if (!window.confirm("Delete this menu item?")) return
     setBusyItem(itemId)
-    setMessage(null)
     try {
       await apiFetch(`/api/menu-items/${itemId}`, { method: "DELETE" })
+      toast({
+        title: "Deleted",
+        description: "Menu item has been deleted.",
+        type: "success",
+      })
       refetch()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "Could not delete this item.")
+      toast({
+        title: "Error",
+        description: cause instanceof Error ? cause.message : "Could not delete this item.",
+        type: "error",
+      })
     } finally {
       setBusyItem(null)
     }

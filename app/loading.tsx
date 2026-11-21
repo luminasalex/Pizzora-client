@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import {Loader2, Forklift, Box} from "lucide-react"
+import { Loader2, Box } from "lucide-react"
 
 const sizes = [40, 60, 80]
 
