@@ -6,9 +6,9 @@ import Footer from "@/components/home/Footer";
 import { Toaster } from "@/components/ui/toast";
 
 export const metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL as string,
-  ),
+  ...(process.env.NEXT_PUBLIC_APP_URL?.trim()
+    ? { metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL.trim()) }
+    : {}),
 }
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'})
