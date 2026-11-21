@@ -67,6 +67,7 @@ async function sendApiRequest(path: string, init: RequestInit, token: string | n
     ...init,
     headers,
     credentials: "omit",
+    cache: init.cache ?? "no-store",
   })
 }
 

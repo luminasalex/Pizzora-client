@@ -44,7 +44,6 @@ export default function BrowseMenuPage({
   if (category) params.set("category", category)
   if (location) params.set("location", location)
   if (sort) params.set("sort", sort)
-
   const { data, error, isLoading, refetch } = useApi<ApiEnvelope<MenuItemRecord[]>>(
     `/api/menu-items?${params.toString()}`,
   )
