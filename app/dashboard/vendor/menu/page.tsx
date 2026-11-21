@@ -65,23 +65,12 @@ export default function VendorMenuManagement() {
           }),
         },
       )
-      toastManager.toast({
-        title: editingItemId ? "Updated" : "Submitted for approval",
-        description: editingItemId
-          ? "Menu item updated. Admin approval may be required again."
-          : "Menu item submitted for admin approval.",
-        type: editingItemId ? "success" : "info",
-      })
       setForm(emptyForm)
       setImageUrl("")
       setEditingItemId(null)
       refetch()
     } catch (cause) {
-      toastManager.toast({
-        title: "Error",
-        description: cause instanceof Error ? cause.message : "Could not save this item.",
-        type: "error",
-      })
+      setMessage(cause instanceof Error ? cause.message : "Could not save this item.")
     } finally {
       setIsSaving(false)
     }
@@ -112,18 +101,9 @@ export default function VendorMenuManagement() {
         method: "PATCH",
         body: JSON.stringify({ availability: !item.availability }),
       })
-      toastManager.toast({
-        title: item.availability ? "Activated" : "Paused",
-        description: `${item.itemName} is now ${item.availability ? "available" : "paused"}.`,
-        type: "success",
-      })
       refetch()
     } catch (cause) {
-      toastManager.toast({
-        title: "Error",
-        description: cause instanceof Error ? cause.message : "Could not update availability.",
-        type: "error",
-      })
+      setMessage(cause instanceof Error ? cause.message : "Could not update availability.")
     } finally {
       setBusyItem(null)
     }
@@ -134,18 +114,9 @@ export default function VendorMenuManagement() {
     setBusyItem(itemId)
     try {
       await apiFetch(`/api/menu-items/${itemId}`, { method: "DELETE" })
-      toastManager.toast({
-        title: "Deleted",
-        description: "Menu item has been deleted.",
-        type: "success",
-      })
       refetch()
     } catch (cause) {
-      toastManager.toast({
-        title: "Error",
-        description: cause instanceof Error ? cause.message : "Could not delete this item.",
-        type: "error",
-      })
+      setMessage(cause instanceof Error ? cause.message : "Could not delete this item.")
     } finally {
       setBusyItem(null)
     }
