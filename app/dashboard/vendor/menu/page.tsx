@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react"
 import Image from "next/image"
 import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Toaster, useToast } from "@/components/ui/toast"
+import { toast } from "@/components/ui/toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -65,7 +65,7 @@ export default function VendorMenuManagement() {
           }),
         },
       )
-      toast({
+      toastManager.toast({
         title: editingItemId ? "Updated" : "Submitted for approval",
         description: editingItemId
           ? "Menu item updated. Admin approval may be required again."
@@ -77,7 +77,7 @@ export default function VendorMenuManagement() {
       setEditingItemId(null)
       refetch()
     } catch (cause) {
-      toast({
+      toastManager.toast({
         title: "Error",
         description: cause instanceof Error ? cause.message : "Could not save this item.",
         type: "error",
@@ -112,14 +112,14 @@ export default function VendorMenuManagement() {
         method: "PATCH",
         body: JSON.stringify({ availability: !item.availability }),
       })
-      toast({
+      toastManager.toast({
         title: item.availability ? "Activated" : "Paused",
         description: `${item.itemName} is now ${item.availability ? "available" : "paused"}.`,
         type: "success",
       })
       refetch()
     } catch (cause) {
-      toast({
+      toastManager.toast({
         title: "Error",
         description: cause instanceof Error ? cause.message : "Could not update availability.",
         type: "error",
@@ -134,14 +134,14 @@ export default function VendorMenuManagement() {
     setBusyItem(itemId)
     try {
       await apiFetch(`/api/menu-items/${itemId}`, { method: "DELETE" })
-      toast({
+      toastManager.toast({
         title: "Deleted",
         description: "Menu item has been deleted.",
         type: "success",
       })
       refetch()
     } catch (cause) {
-      toast({
+      toastManager.toast({
         title: "Error",
         description: cause instanceof Error ? cause.message : "Could not delete this item.",
         type: "error",
