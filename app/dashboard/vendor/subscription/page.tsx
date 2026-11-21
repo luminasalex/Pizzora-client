@@ -16,11 +16,11 @@ type Subscription = {
 }
 
 const freeFeatures = [
-  "Up to 3 active menu items",
+  "Up to 2 menu listings, including items awaiting review",
   "Vendor dashboard and order management",
 ]
 const premiumFeatures = [
-  "Unlimited active menu items",
+  "Unlimited menu listings",
   "Premium vendor badge and featured placement",
   "Everything in the Free plan",
 ]

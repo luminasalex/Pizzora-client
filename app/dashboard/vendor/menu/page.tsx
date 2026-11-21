@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -132,6 +133,7 @@ export default function VendorMenuManagement() {
   }
 
   const items = data?.data ?? []
+  const upgradeRequired = message?.includes("Upgrade to Premium")
 
   return (
     <main className="min-h-screen bg-[#fffdf9] px-5 py-10 sm:px-8">
@@ -143,9 +145,17 @@ export default function VendorMenuManagement() {
         </header>
 
         {(error || message) && (
-          <p className="mb-5 rounded-xl bg-[#fff2e4] p-4 text-sm text-[#6f3a24]" role="status">
-            {message ?? error}
-          </p>
+          <div className="mb-5 rounded-xl bg-[#fff2e4] p-4 text-sm text-[#6f3a24]" role="status">
+            <p>{message ?? error}</p>
+            {upgradeRequired && (
+              <Link
+                href="/dashboard/vendor/subscription"
+                className="mt-2 inline-block font-semibold underline"
+              >
+                View Premium plans
+              </Link>
+            )}
+          </div>
         )}
 
         <Card className="mb-8 border-[#eee5db]">
