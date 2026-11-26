@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { MapPin, UtensilsCrossed } from "lucide-react"
 import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
@@ -18,16 +19,24 @@ type MenuItemDetailsProps = {
 }
 
 export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
+  const router = useRouter()
   const { data, error, isLoading } = useApi<ApiEnvelope<MenuItemRecord>>(
     `/api/menu-items/${encodeURIComponent(itemId)}`,
   )
   const { data: session, isPending: sessionPending } = useSession()
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [deliveryDate, setDeliveryDate] = useState("")
   const [deliveryAddress, setDeliveryAddress] = useState("")
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const item = data?.data
   const role = session?.user?.role ?? "customer"
+
+  useEffect(() => {
+    if (!sessionPending && !session?.user) {
+      router.replace(`/sign-in?callbackUrl=${encodeURIComponent(`/menu/${itemId}`)}`)
+    }
+  }, [itemId, router, session?.user, sessionPending])
 
   async function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -53,7 +62,7 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
     }
   }
 
-  if (isLoading) {
+  if (sessionPending || !session?.user || isLoading) {
     return (
       <main className="mx-auto min-h-[65vh] max-w-6xl animate-pulse px-5 py-12">
         <div className="grid gap-8 md:grid-cols-2">
@@ -83,7 +92,9 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
     )
   }
 
-  const image = item.images[0] || "/pizza-placeholder.svg"
+  const images = item.images.length ? item.images : ["/pizza-placeholder.svg"]
+  const imageIndex = Math.min(activeImageIndex, images.length - 1)
+  const image = images[imageIndex]
 
   return (
     <main className="mx-auto max-w-[1200px] px-5 py-10 sm:px-8 sm:py-16">
@@ -91,15 +102,42 @@ export default function MenuItemDetails({ itemId }: MenuItemDetailsProps) {
         ← Back to menu
       </Link>
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="relative aspect-[1.1/1] overflow-hidden rounded-[28px] bg-[#f5eadc]">
-          <Image
-            src={image}
-            alt={item.itemName}
-            fill
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            className="object-cover"
-            unoptimized
-          />
+        <div>
+          <div className="relative aspect-[1.1/1] overflow-hidden rounded-[28px] bg-[#f5eadc]">
+            <Image
+              src={image}
+              alt={item.itemName}
+              fill
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          {images.length > 1 && (
+            <div className="mt-3 flex flex-wrap gap-2" aria-label="Menu item images">
+              {images.map((imageUrl, index) => (
+                <button
+                  key={`${imageUrl}-${index}`}
+                  type="button"
+                  aria-label={`View image ${index + 1}`}
+                  aria-pressed={imageIndex === index}
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`relative size-16 overflow-hidden rounded-xl border-2 ${
+                    imageIndex === index ? "border-[#d62828]" : "border-transparent"
+                  }`}
+                >
+                  <Image
+                    src={imageUrl}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <section className="rounded-[28px] border border-[#eee5db] bg-white p-6 shadow-sm sm:p-8">

@@ -10,12 +10,14 @@ import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import { getErrorMessage, notify } from "@/lib/notifications"
 import type { ApiEnvelope } from "@/lib/menu-types"
+import { DashboardStatusChart } from "@/components/dashboard/dashboard-status-chart"
 
 type CustomerOrder = {
   id: string
   status: "pending" | "accepted" | "rejected" | "cancelled"
   deliveryDate: string
   deliveryAddress: string
+  message: string
   createdAt: string
   item: { itemName: string; images: string[]; price: number } | null
   vendor: { name: string } | null
@@ -108,6 +110,15 @@ export default function CustomerDashboard() {
           ))}
         </div>
 
+        <DashboardStatusChart
+          title="Order status overview"
+          data={[
+            { label: "Pending", count: stats?.pendingOrders ?? 0 },
+            { label: "Accepted", count: stats?.acceptedOrders ?? 0 },
+            { label: "Rejected", count: stats?.rejectedOrders ?? 0 },
+          ]}
+        />
+
         <section className="mt-8 space-y-4">
           {orders.map((order) => (
             <Card key={order.id} className="border-[#eee5db]">
@@ -133,6 +144,14 @@ export default function CustomerDashboard() {
                     {order.vendor?.name ?? "Restaurant"} · Delivery {order.deliveryDate}
                   </p>
                   <p className="mt-2 truncate text-sm text-[#6f655e]">{order.deliveryAddress}</p>
+                  {order.message && (
+                    <p className="mt-1 truncate text-sm text-[#82776f]">
+                      Note: {order.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-[#93877e]">
+                    Requested {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
                 {order.status === "pending" && (
                   <Button

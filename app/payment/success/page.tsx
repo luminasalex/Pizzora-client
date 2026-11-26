@@ -14,6 +14,8 @@ type Subscription = {
   cancelAtPeriodEnd: boolean
 }
 
+const MAX_STATUS_CHECKS = 24
+
 export default function PaymentSuccessPage() {
   const { data: session } = useSession()
   const isVendor = session?.user?.role === "vendor"
@@ -43,7 +45,7 @@ export default function PaymentSuccessPage() {
   }, [attempts, isPremium])
 
   useEffect(() => {
-    if (!isVendor || isPremium || attempts >= 4) return
+    if (!isVendor || isPremium || attempts >= MAX_STATUS_CHECKS) return
     const timer = window.setTimeout(() => {
       refetch()
       setAttempts((current) => current + 1)

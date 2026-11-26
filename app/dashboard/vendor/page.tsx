@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useApi } from "@/hooks/use-api"
 import { useSession } from "@/lib/auth-client"
 import type { ApiEnvelope } from "@/lib/menu-types"
+import { DashboardStatusChart } from "@/components/dashboard/dashboard-status-chart"
 
 type VendorStats = {
   totalItems: number
@@ -68,7 +69,7 @@ export default function VendorDashboard() {
           </p>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {cards.map(({ label, value, icon: Icon }) => (
             <Card key={label} className="border-[#eee5db]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -82,7 +83,29 @@ export default function VendorDashboard() {
               </CardContent>
             </Card>
           ))}
+          <Card className="border-[#eee5db]">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Accepted orders
+              </CardTitle>
+              <ClipboardList className="size-4 text-[#d62828]" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-[#25201d]">
+                {stats?.acceptedOrders ?? "—"}
+              </p>
+            </CardContent>
+          </Card>
         </div>
+
+        <DashboardStatusChart
+          title="Restaurant activity"
+          data={[
+            { label: "Active items", count: stats?.activeItems ?? 0 },
+            { label: "Pending orders", count: stats?.pendingOrders ?? 0 },
+            { label: "Accepted orders", count: stats?.acceptedOrders ?? 0 },
+          ]}
+        />
 
         <section className="mt-8 grid gap-4 md:grid-cols-3">
           {links.map(({ href, label, icon: Icon }) => (

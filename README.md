@@ -15,8 +15,15 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Set `NEXT_PUBLIC_API_URL` in `.env.local` to the Express API origin, for example `http://localhost:3001`.
+Set `NEXT_PUBLIC_API_BASE_URL` in `.env.local` to the Express API origin, for example `http://localhost:3001`.
 Set `NEXT_PUBLIC_APP_URL` to the website URL with an explicit port, for example `http://localhost:4000`. The `dev` and `start` scripts use that port to run Next.js and as the site's metadata base URL. For production behind a reverse proxy, set `PORT` to the internal server port; it takes precedence over the port in `NEXT_PUBLIC_APP_URL`.
+
+## Technology
+
+- `next`, `react`, `typescript`, `tailwindcss`, and shadcn/ui
+- `better-auth` for email/password and Google authentication
+- `framer-motion`, `lucide-react`, `recharts`, and `date-fns`
+- Express API, MongoDB, Stripe Checkout (vendor subscriptions only), and ImgBB uploads
 
 Useful checks:
 
@@ -38,10 +45,16 @@ The interface uses the Pizzora tomato-red and warm-cream palette, reusable shadc
 
 ## Environment
 
-See [.env.example](./.env.example). This value is public configuration, not a credential. Never place MongoDB, Better Auth, Google OAuth, Stripe, or ImgBB secrets in a `NEXT_PUBLIC_` variable.
+See [.env.example](./.env.example). API/app origins, contact details, and social links are public configuration, not credentials. Never place MongoDB, Better Auth, Google OAuth, Stripe, or ImgBB secrets in a `NEXT_PUBLIC_` variable.
 
 ## Deployment
 
-Deploy this client to Vercel and set `NEXT_PUBLIC_API_URL` to the deployed Express API origin. Configure the API's `CLIENT_URL`, Better Auth URL, and Google OAuth callback consistently. A same-site production domain or reverse proxy is recommended for dependable session cookies across browsers.
+Deploy this client to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to the deployed Express API origin. Configure the API's `CLIENT_URL`, Better Auth URL, and Google OAuth callback consistently. A same-site production domain or reverse proxy is recommended for dependable session cookies across browsers.
 
-No production deployment URL is configured in this repository yet.
+The published client URL is https://pizzora-client-ten.vercel.app/. Set `NEXT_PUBLIC_APP_URL` to this URL in the Vercel project settings.
+
+## Submission links
+
+- Live website: https://pizzora-client-ten.vercel.app/
+- Client GitHub repository: Not configured in this workspace
+- API repository: https://github.com/luminasalex/-Pizzora-backend

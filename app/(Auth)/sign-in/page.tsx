@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { signIn, useSession } from "@/lib/auth-client";
+import { getSafeRedirectPath, signIn, useSession } from "@/lib/auth-client";
 import { clearCachedApiToken } from "@/lib/api";
 import { getErrorMessage, notify } from "@/lib/notifications"
 import Link from "next/link";
@@ -21,11 +21,19 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const redirectPath =
+    typeof window === "undefined"
+      ? null
+      : getSafeRedirectPath(
+          new URLSearchParams(window.location.search).get("callbackUrl"),
+        )
 
   // Already signed in? Leave the auth pages.
   useEffect(() => {
-    if (!sessionPending && session?.user) router.replace("/");
-  }, [sessionPending, session, router]);
+    if (!sessionPending && session?.user) {
+      router.replace(redirectPath ?? "/auth/callback")
+    }
+  }, [redirectPath, sessionPending, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +46,7 @@ export default function SignInPage() {
       }
       notify("success", "Signed in successfully")
       clearCachedApiToken();
-      router.push("/");
+      router.replace(redirectPath ?? "/auth/callback");
       router.refresh();
     } catch (cause) {
       notify("error", "Sign in failed", getErrorMessage(cause, "Please try again."));
@@ -52,7 +60,7 @@ export default function SignInPage() {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: redirectPath ?? "/auth/callback",
       });
       if (error) {
         notify("error", "Google sign in failed", error.message ?? "Please try again.");
@@ -163,7 +171,7 @@ export default function SignInPage() {
           Don&apos;t have an account?{" "}
           <Link
             href="/sign-up"
-            className="underline underline-offset-4 font-medium text-indigo-600 hover:text-indigo-800"
+            className="font-medium text-[#d62828] underline underline-offset-4 hover:text-[#a4161a]"
           >
             Sign Up
           </Link>

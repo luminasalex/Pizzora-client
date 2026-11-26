@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Pencil } from "lucide-react"
@@ -14,6 +14,7 @@ import { useApi } from "@/hooks/use-api"
 import { apiFetch } from "@/lib/api"
 import { useSession } from "@/lib/auth-client"
 import { getErrorMessage, notify } from "@/lib/notifications"
+import { uploadImage } from "@/lib/uploads"
 import type { ApiEnvelope, MenuItemRecord } from "@/lib/menu-types"
 
 const categories = [
@@ -42,7 +43,9 @@ export default function VendorMenuManagement() {
     { enabled: isVendor },
   )
   const [form, setForm] = useState(emptyForm)
-  const [imageUrl, setImageUrl] = useState("")
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [busyItem, setBusyItem] = useState<string | null>(null)
@@ -51,7 +54,12 @@ export default function VendorMenuManagement() {
     event.preventDefault()
     setIsSaving(true)
     try {
-      if (!editingItemId && !imageUrl) throw new Error("Enter a menu item image URL.")
+      const uploadedImageUrls = imageFiles.length
+        ? await Promise.all(imageFiles.map(uploadImage))
+        : imageUrls
+      if (!editingItemId && !uploadedImageUrls.length) {
+        throw new Error("Choose at least one menu item image file.")
+      }
       const isEditing = Boolean(editingItemId)
       await apiFetch(
         editingItemId ? `/api/menu-items/${editingItemId}` : "/api/menu-items",
@@ -63,7 +71,7 @@ export default function VendorMenuManagement() {
             description: form.description,
             price: Number(form.price),
             location: form.location,
-            ...(imageUrl ? { images: [imageUrl] } : {}),
+            images: uploadedImageUrls,
           }),
         },
       )
@@ -75,7 +83,9 @@ export default function VendorMenuManagement() {
           : "Your menu item is awaiting admin approval.",
       )
       setForm(emptyForm)
-      setImageUrl("")
+      setImageUrls([])
+      setImageFiles([])
+      if (imageInputRef.current) imageInputRef.current.value = ""
       setEditingItemId(null)
       refetch()
     } catch (cause) {
@@ -94,6 +104,8 @@ export default function VendorMenuManagement() {
   }
 
   function editItem(item: MenuItemRecord) {
+    setImageFiles([])
+    if (imageInputRef.current) imageInputRef.current.value = ""
     setEditingItemId(item.id)
     setForm({
       itemName: item.itemName,
@@ -102,12 +114,14 @@ export default function VendorMenuManagement() {
       price: String(item.price),
       location: item.location,
     })
-    setImageUrl(item.images?.[0] || "")
+    setImageUrls(item.images ?? [])
   }
 
   function resetForm() {
     setForm(emptyForm)
-    setImageUrl("")
+    setImageUrls([])
+    setImageFiles([])
+    if (imageInputRef.current) imageInputRef.current.value = ""
     setEditingItemId(null)
   }
 
@@ -235,18 +249,38 @@ export default function VendorMenuManagement() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="image">Menu item image URL</Label>
+                <Label htmlFor="image">Menu item image</Label>
                 <Input
+                  ref={imageInputRef}
                   id="image"
-                  value={imageUrl}
-                  onChange={(event) => setImageUrl(event.target.value)}
-                  placeholder="https://example.com/pizza.png"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  required={!editingItemId}
+                  onChange={(event) => {
+                    const files = Array.from(event.target.files ?? [])
+                    if (files.length > 5) {
+                      notify("error", "Too many images", "Choose up to 5 images.")
+                      event.currentTarget.value = ""
+                      setImageFiles([])
+                      return
+                    }
+                    setImageFiles(files)
+                  }}
                 />
                 {editingItemId && (
                   <p className="text-xs text-muted-foreground">
-                    Enter a new image URL only if you want to replace the current one.
+                    Choosing new files replaces the current images; leave empty to keep them.
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  {imageFiles.length
+                    ? `${imageFiles.length} image${imageFiles.length === 1 ? "" : "s"} selected. `
+                    : editingItemId
+                      ? `${imageUrls.length} current image${imageUrls.length === 1 ? "" : "s"}. `
+                      : ""}
+                  JPEG, PNG, or WebP; maximum 4 MB each. Uploaded to ImgBB.
+                </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button type="submit" className="bg-[#d62828] hover:bg-[#a4161a]" disabled={isSaving}>

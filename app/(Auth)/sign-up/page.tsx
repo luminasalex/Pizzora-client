@@ -45,14 +45,11 @@ export default function SignUpPage() {
 
   // Already signed in? Leave the auth pages.
   useEffect(() => {
-    if (!sessionPending && session?.user) router.replace("/");
+    if (!sessionPending && session?.user) router.replace("/auth/callback");
   }, [sessionPending, session, router]);
 
   const passwordRules = {
-    // Must match Better Auth's server default (`minPasswordLength: 8` in
-    // `lib/auth.ts` config); a shorter password passes the form but is
-    // rejected server-side.
-    minLength: password.length >= 8,
+    minLength: password.length >= 6,
     hasUppercase: /[A-Z]/.test(password),
     hasLowercase: /[a-z]/.test(password),
   };
@@ -93,7 +90,7 @@ export default function SignUpPage() {
       notify("success", "Account created successfully")
       clearCachedApiToken();
       // Better Auth signs the user in on successful sign-up.
-      router.push("/");
+      router.replace("/auth/callback");
       router.refresh();
     } catch (cause) {
       notify("error", "Sign up failed", getErrorMessage(cause, "Please try again."));
@@ -107,7 +104,7 @@ export default function SignUpPage() {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "/auth/callback",
         requestSignUp: true,
       });
       if (error) {
@@ -126,7 +123,7 @@ export default function SignUpPage() {
       <Card className="w-full p-8 shadow-lg">
         {/* Header */}
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-[#25201d]">
             Create an account
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -290,7 +287,7 @@ export default function SignUpPage() {
               <ul className="mt-2 space-y-1 text-xs">
                 <RequirementItem
                   met={passwordRules.minLength}
-                  label="At least 8 characters"
+                  label="At least 6 characters"
                 />
                 <RequirementItem
                   met={passwordRules.hasUppercase}
@@ -374,7 +371,7 @@ export default function SignUpPage() {
           <Button
             type="submit"
             disabled={!isPasswordValid || !doPasswordsMatch || isSubmitting}
-            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="w-full bg-[#d62828] font-semibold text-white shadow-lg shadow-[#d62828]/20 transition-all duration-200 hover:scale-[1.02] hover:bg-[#a4161a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -391,7 +388,7 @@ export default function SignUpPage() {
           Already have an account?{" "}
           <Link
             href="/sign-in"
-            className="underline underline-offset-4 font-medium text-indigo-600 hover:text-indigo-800"
+            className="font-medium text-[#d62828] underline underline-offset-4 hover:text-[#a4161a]"
           >
             Sign In
           </Link>

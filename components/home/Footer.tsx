@@ -1,5 +1,13 @@
-import { ArrowUpRight, Camera, MessageCircle, Pizza } from "lucide-react"
+import { ArrowUpRight, Pizza } from "lucide-react"
 import Link from "next/link"
+
+const socialLinks = [
+  { label: "Instagram", url: process.env.NEXT_PUBLIC_INSTAGRAM_URL },
+  { label: "Facebook", url: process.env.NEXT_PUBLIC_FACEBOOK_URL },
+  { label: "X", url: process.env.NEXT_PUBLIC_X_URL },
+].flatMap(({ label, url }) =>
+  url?.startsWith("https://") ? [{ label, url }] : [],
+)
 
 const browseLinks = [
   { label: "Classic pizzas", href: "/menu?category=Classic%20Pizzas" },
@@ -9,6 +17,9 @@ const browseLinks = [
 ]
 
 export default function Footer() {
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim()
+  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE?.trim()
+
   return (
     <footer id="footer" className="bg-[#211b18] text-white">
       <div className="mx-auto max-w-[1320px] px-5 pt-16 pb-8 sm:px-8 lg:px-12 lg:pt-20">
@@ -27,14 +38,17 @@ export default function Footer() {
               made-fresh favorites, and the people behind them.
             </p>
             <div className="mt-6 flex items-center gap-2">
-              <span className="flex size-10 items-center justify-center rounded-full border border-white/15 text-white/75">
-                <Camera size={17} aria-hidden="true" />
-                <span className="sr-only">Social media</span>
-              </span>
-              <span className="flex size-10 items-center justify-center rounded-full border border-white/15 text-white/75">
-                <MessageCircle size={17} aria-hidden="true" />
-                <span className="sr-only">Community</span>
-              </span>
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white/75 transition-colors hover:border-white/40 hover:text-white"
+                >
+                  {social.label}
+                </a>
+              ))}
             </div>
           </div>
 
@@ -112,6 +126,23 @@ export default function Footer() {
             <p className="mt-5 text-xs leading-6 text-white/40">
               Have an order question? Sign in to manage your account.
             </p>
+            {(contactEmail || contactPhone) && (
+              <div className="mt-4 grid gap-2 text-sm text-white/65">
+                {contactEmail && contactEmail.includes("@") && (
+                  <a className="hover:text-white" href={`mailto:${contactEmail}`}>
+                    {contactEmail}
+                  </a>
+                )}
+                {contactPhone && /^[+0-9(). -]+$/.test(contactPhone) && (
+                  <a
+                    className="hover:text-white"
+                    href={`tel:${contactPhone.replace(/[^\d+]/g, "")}`}
+                  >
+                    {contactPhone}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
