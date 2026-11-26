@@ -16,7 +16,7 @@ export type MenuItem = {
 
 export default function MenuItemCard({ item }: { item: MenuItem }) {
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-[#eee5db] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#e7cfc0] hover:shadow-[0_22px_50px_rgba(58,38,22,0.1)]">
+    <article className="group min-w-0 overflow-hidden rounded-[24px] border border-[#eee5db] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#e7cfc0] hover:shadow-[0_22px_50px_rgba(58,38,22,0.1)]">
       <div className="relative aspect-[1.22/1] overflow-hidden bg-[#f5eadc]">
         <Image
           src={item.image}

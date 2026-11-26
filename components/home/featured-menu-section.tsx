@@ -35,7 +35,7 @@ export default function FeaturedMenuSection({
       className="scroll-mt-24 bg-[#fffdf9] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[1320px]">
-        <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <Reveal className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <p className="mb-4 text-[11px] font-bold tracking-[0.2em] text-[#d62828] uppercase">
               A little something special
@@ -58,7 +58,7 @@ export default function FeaturedMenuSection({
         {items.length > 0 ? (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {items.slice(0, 6).map((item, index) => (
-              <Reveal key={item.id} delay={index * 0.06}>
+              <Reveal key={item.id} delay={index * 0.06} className="min-w-0">
                 <MenuItemCard item={item} />
               </Reveal>
             ))}

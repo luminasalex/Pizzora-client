@@ -26,25 +26,25 @@ export default function HeroSection() {
             duration: reduceMotion ? 0 : 0.7,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="relative z-10 max-w-[590px]"
+          className="relative z-10 mx-auto max-w-[590px] text-center lg:mx-0 lg:text-left"
         >
-          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e9d8c3] bg-white/70 px-4 py-2 text-[11px] font-bold tracking-[0.16em] text-[#9b5b2b] uppercase">
+          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e9d8c3] bg-white/70 px-3 py-2 text-[9px] font-bold tracking-[0.12em] text-[#9b5b2b] uppercase sm:px-4 sm:text-[11px] sm:tracking-[0.16em]">
             <span className="size-1.5 rounded-full bg-[#f77f00]" />
             Your neighborhood, served hot
           </p>
-          <h1 className="max-w-[650px] text-[clamp(3.35rem,7.2vw,6.6rem)] leading-[0.94] font-semibold tracking-[-0.065em] text-[#25201d]">
+          <h1 className="mx-auto max-w-[650px] text-[clamp(2.7rem,13vw,6.6rem)] leading-[0.94] font-semibold tracking-[-0.065em] text-[#25201d] lg:mx-0 lg:text-[clamp(3.35rem,7.2vw,6.6rem)]">
             Your cravings.
             <span className="font-display mt-2 block font-medium tracking-[-0.055em] text-[#d62828] italic">
               Our freshly baked happiness.
             </span>
           </h1>
-          <p className="mt-7 max-w-[490px] text-base leading-7 text-[#746961] sm:text-lg sm:leading-8">
+          <p className="mx-auto mt-7 max-w-[490px] text-base leading-7 text-[#746961] sm:text-lg sm:leading-8 lg:mx-0">
             Discover amazing local pizza restaurants, explore handcrafted
             flavors, and enjoy delicious moments delivered right to your
             doorstep.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
+          <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:justify-center lg:justify-start">
             <Link
               href="/menu"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-full bg-[#d62828] px-7 text-sm font-bold text-white shadow-[0_12px_24px_rgba(214,40,40,0.19)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
@@ -59,7 +59,7 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-[#e8d9c7] pt-6">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-4 border-t border-[#e8d9c7] pt-6 sm:gap-x-7 lg:justify-start">
             <div className="flex items-center gap-2 text-sm font-semibold text-[#4c4038]">
               <span className="flex size-8 items-center justify-center rounded-full bg-white text-[#d62828]">
                 <Leaf size={16} />

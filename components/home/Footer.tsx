@@ -6,7 +6,7 @@ const socialLinks = [
   { label: "Facebook", url: process.env.NEXT_PUBLIC_FACEBOOK_URL },
   { label: "X", url: process.env.NEXT_PUBLIC_X_URL },
 ].flatMap(({ label, url }) =>
-  url?.startsWith("https://") ? [{ label, url }] : [],
+  url?.startsWith("https://") ? [{ label, url }] : []
 )
 
 const browseLinks = [
@@ -23,7 +23,7 @@ export default function Footer() {
   return (
     <footer id="footer" className="bg-[#211b18] text-white">
       <div className="mx-auto max-w-[1320px] px-5 pt-16 pb-8 sm:px-8 lg:px-12 lg:pt-20">
-        <div className="grid gap-12 border-b border-white/10 pb-12 md:grid-cols-[1.4fr_0.8fr_0.8fr_1fr] lg:gap-16">
+        <div className="grid gap-10 border-b border-white/10 pb-12 sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-[1.4fr_0.8fr_0.8fr_1fr] lg:gap-16">
           <div className="max-w-sm">
             <Link href="/#home" className="inline-flex items-center gap-2.5">
               <span className="flex size-10 items-center justify-center rounded-full bg-[#d62828] text-white">
@@ -129,7 +129,10 @@ export default function Footer() {
             {(contactEmail || contactPhone) && (
               <div className="mt-4 grid gap-2 text-sm text-white/65">
                 {contactEmail && contactEmail.includes("@") && (
-                  <a className="hover:text-white" href={`mailto:${contactEmail}`}>
+                  <a
+                    className="hover:text-white"
+                    href={`mailto:${contactEmail}`}
+                  >
                     {contactEmail}
                   </a>
                 )}

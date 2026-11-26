@@ -21,7 +21,7 @@ export default function VendorSection() {
           <div className="pointer-events-none absolute -top-24 -right-16 -z-10 size-80 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -top-10 -right-2 -z-10 size-56 rounded-full border border-white/10" />
           <div className="grid lg:grid-cols-[1fr_0.95fr]">
-            <Reveal className="relative z-10 px-7 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16">
+            <Reveal className="relative z-10 px-5 py-9 sm:px-12 sm:py-14 lg:px-16 lg:py-16">
               <p className="mb-5 text-[10px] font-bold tracking-[0.22em] text-[#ffb15a] uppercase">
                 For the makers & the bakers
               </p>

@@ -21,7 +21,7 @@ export default function HomePage({
   error,
 }: HomePageProps) {
   return (
-    <main>
+    <main className="w-full overflow-x-hidden">
       <HeroSection />
       <FeaturedMenuSection
         items={featuredItems}

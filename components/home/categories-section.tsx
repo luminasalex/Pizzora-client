@@ -122,7 +122,7 @@ export default function CategoriesSection() {
           </p>
         </Reveal>
 
-        <div className="grid auto-rows-[230px] gap-4 sm:grid-cols-2 md:auto-rows-[250px] md:grid-cols-4 lg:auto-rows-[270px]">
+        <div className="grid auto-rows-[220px] gap-4 sm:auto-rows-[240px] sm:grid-cols-2 md:auto-rows-[250px] md:grid-cols-4 lg:auto-rows-[270px]">
           {defaultCategories.map((category, index) => {
             const Icon = category.icon
 
@@ -134,7 +134,7 @@ export default function CategoriesSection() {
               >
                 <Link
                   href={`/menu?category=${encodeURIComponent(
-                    categoryLabels[category.slug] ?? category.name,
+                    categoryLabels[category.slug] ?? category.name
                   )}`}
                   aria-label={`Browse ${category.name}`}
                   className={`group relative flex h-full min-h-[220px] overflow-hidden rounded-[24px] ${category.tone}`}

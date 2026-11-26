@@ -36,7 +36,9 @@ export default function HowItWorksSection() {
             </p>
             <h2 className="font-display max-w-2xl text-4xl leading-[1.05] font-medium tracking-[-0.045em] text-[#25201d] sm:text-5xl lg:text-[58px]">
               Three steps to a
-              <span className="ml-2 text-[#d62828] italic">better bite.</span>
+              <span className="block text-[#d62828] italic sm:ml-2 sm:inline">
+                better bite.
+              </span>
             </h2>
           </div>
           <p className="max-w-xs text-sm leading-6 text-[#82776f]">
