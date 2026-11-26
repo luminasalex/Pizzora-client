@@ -58,8 +58,8 @@ export default function VendorMenuManagement() {
     event.preventDefault()
     setIsSaving(true)
     try {
-      if (!imageUrls.length) {
-        throw new Error("Add at least one menu item image URL.")
+      if (imageUrls.length !== 1) {
+        throw new Error("Add exactly one menu item image URL.")
       }
       const isEditing = Boolean(editingItemId)
       await apiFetch(
@@ -140,8 +140,8 @@ export default function VendorMenuManagement() {
       notify("error", "Invalid image URL", "Image URLs must use HTTP or HTTPS.")
       return
     }
-    if (imageUrls.length >= 5) {
-      notify("error", "Image limit reached", "Add up to 5 image URLs.")
+    if (imageUrls.length >= 1) {
+      notify("error", "Image limit reached", "Only one image URL is allowed.")
       return
     }
     if (imageUrls.includes(value)) {
@@ -320,7 +320,7 @@ export default function VendorMenuManagement() {
                 />
               </div>
               <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="imageUrl">Menu item image URLs</Label>
+                <Label htmlFor="imageUrl">Menu item image URL</Label>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     id="imageUrl"
@@ -341,14 +341,14 @@ export default function VendorMenuManagement() {
                     type="button"
                     variant="outline"
                     onClick={addImageUrl}
-                    disabled={!imageUrlDraft.trim() || imageUrls.length >= 5}
+                    disabled={!imageUrlDraft.trim() || imageUrls.length >= 1}
                   >
                     Add URL
                   </Button>
                 </div>
                 <p className="text-muted-foreground text-xs">
-                  Add up to 5 direct image URLs. Use an image link that is
-                  publicly accessible.
+                  Add one publicly accessible image URL. Remove the current URL
+                  before adding a replacement.
                 </p>
                 {imageUrls.length > 0 && (
                   <ul className="grid gap-2">
