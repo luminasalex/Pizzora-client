@@ -2,9 +2,8 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowDown, ArrowRight, ArrowUpRight, Leaf, Star } from "lucide-react"
+import { ArrowRight, ArrowUpRight } from "lucide-react"
 import { motion, useReducedMotion } from "framer-motion"
-import heroPizza from "@/app/image/hero-pizza.png"
 import pizzaDetail from "@/app/image/pizza-01.png"
 
 export default function HeroSection() {
@@ -13,138 +12,88 @@ export default function HeroSection() {
   return (
     <section
       id="home"
-      className="relative isolate overflow-hidden bg-[#fff8ed] px-5 pt-12 pb-16 sm:px-8 sm:pt-16 sm:pb-20 lg:px-12 lg:pt-20 lg:pb-24"
+      className="relative isolate min-h-[680px] overflow-hidden bg-[#a4161a] px-5 pt-10 pb-28 text-white sm:min-h-[740px] sm:px-8 sm:pt-14 lg:min-h-[780px] lg:px-12"
     >
-      <div className="pointer-events-none absolute -top-20 left-[40%] -z-10 size-72 rounded-full bg-[#f7e5cd]/50 blur-3xl" />
-      <div className="pointer-events-none absolute right-[-5rem] -bottom-28 -z-10 size-80 rounded-full bg-[#f7e5cd]/70 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_70%,#df3a27_0%,#b11d1d_48%,#8d1117_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-black/10 to-transparent" />
 
-      <div className="mx-auto grid max-w-[1320px] items-center gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8">
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.7,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="relative z-10 mx-auto max-w-[590px] text-center lg:mx-0 lg:text-left"
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: reduceMotion ? 0 : 0.65,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="relative z-10 mx-auto max-w-[900px] text-center"
+      >
+        <p className="font-display text-3xl leading-none text-[#ffd21c] italic sm:text-4xl">
+          Original
+        </p>
+        <h1 className="mt-2 text-[clamp(4.5rem,15vw,10rem)] leading-[0.82] font-black tracking-[-0.075em] text-white [text-shadow:0_5px_0_rgba(80,10,10,0.12)]">
+          PIZZA
+        </h1>
+        <p className="mx-auto mt-5 max-w-[440px] text-sm leading-6 text-white/85 sm:text-base">
+          Handcrafted flavors, made fresh by your favorite local kitchens.
+        </p>
+        <Link
+          href="/#restaurant-partners"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.12em] text-[#ffe36b] uppercase transition-colors hover:text-white sm:text-sm"
         >
-          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e9d8c3] bg-white/70 px-3 py-2 text-[9px] font-bold tracking-[0.12em] text-[#9b5b2b] uppercase sm:px-4 sm:text-[11px] sm:tracking-[0.16em]">
-            <span className="size-1.5 rounded-full bg-[#f77f00]" />
-            Your neighborhood, served hot
-          </p>
-          <h1 className="mx-auto max-w-[650px] text-[clamp(2.7rem,13vw,6.6rem)] leading-[0.94] font-semibold tracking-[-0.065em] text-[#25201d] lg:mx-0 lg:text-[clamp(3.35rem,7.2vw,6.6rem)]">
-            Your cravings.
-            <span className="font-display mt-2 block font-medium tracking-[-0.055em] text-[#d62828] italic">
-              Our freshly baked happiness.
-            </span>
-          </h1>
-          <p className="mx-auto mt-7 max-w-[490px] text-base leading-7 text-[#746961] sm:text-lg sm:leading-8 lg:mx-0">
-            Discover amazing local pizza restaurants, explore handcrafted
-            flavors, and enjoy delicious moments delivered right to your
-            doorstep.
-          </p>
+          Discover local restaurants <ArrowUpRight size={15} />
+        </Link>
+      </motion.div>
 
-          <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:justify-center lg:justify-start">
-            <Link
-              href="/menu"
-              className="inline-flex h-[54px] items-center justify-center gap-3 rounded-full bg-[#d62828] px-7 text-sm font-bold text-white shadow-[0_12px_24px_rgba(214,40,40,0.19)] transition-all hover:-translate-y-0.5 hover:bg-[#a4161a]"
-            >
-              Explore menu <ArrowRight size={17} />
-            </Link>
-            <Link
-              href="/#restaurant-partners"
-              className="inline-flex h-[54px] items-center justify-center gap-3 rounded-full border border-[#decdb9] bg-white/70 px-7 text-sm font-bold text-[#3a302a] transition-all hover:border-[#d62828] hover:text-[#d62828]"
-            >
-              Discover restaurants <ArrowUpRight size={16} />
-            </Link>
-          </div>
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 18 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{
+          duration: reduceMotion ? 0 : 0.85,
+          delay: reduceMotion ? 0 : 0.1,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="absolute inset-x-0 -bottom-[100px] z-0 mx-auto aspect-square w-[min(760px,115vw)] overflow-hidden rounded-full shadow-[0_30px_90px_rgba(54,8,7,0.28)] sm:-bottom-[330px]"
+      >
+        <Image
+          src={pizzaDetail}
+          alt="Freshly baked pepperoni pizza with basil and tomatoes"
+          fill
+          priority
+          sizes="(max-width: 768px) 115vw, 760px"
+          className="object-cover"
+        />
+      </motion.div>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-4 border-t border-[#e8d9c7] pt-6 sm:gap-x-7 lg:justify-start">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#4c4038]">
-              <span className="flex size-8 items-center justify-center rounded-full bg-white text-[#d62828]">
-                <Leaf size={16} />
-              </span>
-              Local kitchens
-            </div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#4c4038]">
-              <span className="flex size-8 items-center justify-center rounded-full bg-white text-[#f77f00]">
-                <Star size={15} fill="currentColor" />
-              </span>
-              Made with care
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={
-            reduceMotion ? false : { opacity: 0, scale: 0.96, rotate: 1.5 }
-          }
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.85,
-            delay: reduceMotion ? 0 : 0.12,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="relative mx-auto w-full max-w-[700px] lg:-mr-4"
-        >
-          <div className="absolute top-[9%] -left-2 z-10 hidden -rotate-6 items-center gap-2 rounded-full bg-white px-4 py-3 text-xs font-bold text-[#554a42] shadow-[0_12px_32px_rgba(48,31,20,0.12)] sm:flex md:-left-6">
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#fff1dc] text-[#e17818]">
-              <Leaf size={15} />
-            </span>
-            Freshly baked, always loved
-          </div>
-          <div className="relative aspect-[1.12/1] overflow-hidden rounded-[44%_56%_54%_46%/48%_44%_56%_52%] bg-[#211b18] shadow-[0_34px_70px_rgba(66,40,21,0.2)]">
-            <Image
-              src={heroPizza}
-              alt="Pepperoni pizza with fresh basil and tomatoes"
-              fill
-              priority
-              sizes="(max-width: 1024px) 90vw, 55vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1b1410]/35 via-transparent to-transparent" />
-            <div className="absolute bottom-6 left-6 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#fffdf9]/95 p-3 pr-5 shadow-xl sm:bottom-8 sm:left-8">
-              <div className="relative size-14 overflow-hidden rounded-xl">
-                <Image
-                  src={pizzaDetail}
-                  alt=""
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold tracking-[0.14em] text-[#d62828] uppercase">
-                  The neighborhood favorite
-                </p>
-                <p className="mt-1 text-sm font-semibold text-[#25201d]">
-                  Made for sharing
-                </p>
-              </div>
-            </div>
-            <div className="absolute top-5 right-5 flex size-16 flex-col items-center justify-center rounded-full bg-[#f77f00] text-white shadow-lg sm:top-8 sm:right-8 sm:size-[76px]">
-              <span className="text-[9px] font-bold tracking-widest uppercase">
-                Always
-              </span>
-              <span className="font-display text-lg leading-5 italic sm:text-xl">
-                fresh
-              </span>
-            </div>
-          </div>
-          <div className="absolute -right-2 -bottom-7 -z-10 size-28 rounded-full border border-dashed border-[#d6b995] sm:-right-4 sm:size-36" />
-          <div className="absolute top-1/2 -right-3 hidden -translate-y-1/2 rotate-90 items-center gap-2 text-[10px] font-bold tracking-[0.28em] text-[#ac9881] uppercase xl:flex">
-            <span className="h-px w-8 bg-[#ac9881]" />
-            The good stuff
-          </div>
-        </motion.div>
+      <div className="absolute top-[48%] right-[7%] z-10 flex size-[92px] rotate-[9deg] flex-col items-center justify-center rounded-full border-2 border-dashed border-[#8c5800] bg-[#ffd21c] text-center text-[#34210a] shadow-[0_8px_24px_rgba(65,13,9,0.25)] sm:right-[13%] sm:size-[112px]">
+        <span className="text-[9px] font-black tracking-[0.16em] uppercase sm:text-[10px]">
+          Always
+        </span>
+        <span className="font-display text-xl leading-5 font-bold italic sm:text-2xl">
+          fresh
+        </span>
       </div>
 
-      <a
-        href="#featured"
-        className="mx-auto mt-14 hidden w-fit items-center gap-2 text-xs font-bold tracking-[0.14em] text-[#8e7c6a] uppercase transition-colors hover:text-[#d62828] lg:flex"
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 150"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[118px] w-full sm:h-[145px]"
       >
-        Take a look <ArrowDown size={14} />
-      </a>
+        <path d="M0 0 Q720 150 1440 0 L1440 150 L0 150 Z" fill="#fffdf9" />
+      </svg>
+
+      <Link
+        href="/menu"
+        className="absolute bottom-3 left-1/2 z-20 flex size-[112px] -translate-x-1/2 flex-col items-center justify-center rounded-full border-[7px] border-[#ffd21c] bg-white text-[#28201c] shadow-[0_12px_28px_rgba(44,13,10,0.24)] transition-transform hover:scale-105 sm:bottom-4 sm:size-[128px]"
+      >
+        <span className="mb-1 flex size-8 items-center justify-center rounded-full bg-[#d62828] text-white">
+          <ArrowRight size={17} />
+        </span>
+        <span className="text-[13px] leading-4 font-black tracking-tight uppercase sm:text-sm">
+          Order
+          <br />
+          pizza
+        </span>
+      </Link>
     </section>
   )
 }
